@@ -8,25 +8,21 @@ export default function TabLayout() {
       label: "Home",
       icon: "home-outline",
     },
-
-    {
-      name: "playlist",
-      label: "Playlists",
-      icon: "list-outline",
-    },
-
-    {
-      name: "search",
-      label: "Search",
-      icon: "search-outline",
-    },
-
     {
       name: "library",
       label: "Library",
       icon: "musical-notes-outline",
     },
-
+    {
+      name: "search",
+      label: "Search",
+      icon: "search-outline",
+    },
+    {
+      name: "playlist",
+      label: "Playlists",
+      icon: "list-outline",
+    },
     {
       name: "settings",
       label: "Settings",
@@ -50,7 +46,7 @@ export default function TabLayout() {
           options={{
             title: label,
             tabBarLabel: label,
-            tabBarIcon: ({ color, size }) => (
+            tabBarIcon: ({ color, size }, idx) => (
               <Ionicons name={icon} color={color} size={size} />
             ),
           }}

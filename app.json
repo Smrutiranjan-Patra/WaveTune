@@ -4,22 +4,25 @@
     "slug": "WaveTune",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    // "icon": "./assets/images/icon.png",
     "scheme": "wavetune",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.WaveTune"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        // "foregroundImage": "./assets/images/android-icon-foreground.png",
+        // "backgroundImage": "./assets/images/android-icon-background.png",
+        // "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": ["READ_MEDIA_AUDIO"],
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.WaveTune"
     },
     "web": {
       "output": "static",
@@ -30,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
