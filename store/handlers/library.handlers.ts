@@ -1,5 +1,10 @@
 import * as MediaLibrary from "expo-media-library";
-import { getFolders, getAlbums, getArtists, getGenres } from "../../utils/helper"
+import {
+  getFolders,
+  getAlbums,
+  getArtists,
+  getGenres,
+} from "../../utils/helper";
 
 const loadLibrary = async (set, get) => {
   set({ loading: true });
@@ -37,6 +42,4 @@ const loadLibrary = async (set, get) => {
   });
 };
 
-export {
-  loadLibrary
-};
+export { loadLibrary };
