@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import * as MediaLibrary from "expo-media-library";
 
-import { loadLibrary } from "./handlers/library.handlers";
+import { loadLibraryData } from "./handlers/library.handlers";
 
 interface LibraryState {
   loading: boolean;
@@ -15,7 +15,7 @@ interface LibraryState {
   artists: MediaLibrary.Asset[];
   genres: MediaLibrary.Asset[];
 
-  loadLibrary: (...args: any[]) => Promise<void>;
+  loadLibraryData: (...args: any[]) => Promise<void>;
 }
 
 export const useLibraryStore = create<LibraryState>((set, get) => ({
@@ -28,5 +28,5 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   artists: [],
   genres: [],
 
-  loadLibrary: (...args) => loadLibrary(set, get, ...args),
+  loadLibraryData: (...args) => loadLibraryData(set, get, ...args),
 }));
