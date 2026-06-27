@@ -8,10 +8,10 @@ export default function AppProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const loadLibrary = useLibraryStore((state) => state.loadLibrary);
+  const loadLibraryData = useLibraryStore((state) => state.loadLibraryData);
 
   useEffect(() => {
-    loadLibrary();
+    loadLibraryData();
   }, []);
 
   return children;
