@@ -43,7 +43,7 @@ export default function MiniPlayer() {
         style={{
           height: 3,
           width: `${progress * 100}%`,
-          backgroundColor: "#9AD872",
+          backgroundColor: "#4F46E5",
         }}
       />
 
