@@ -4,7 +4,8 @@ import { usePlayerStore } from "../../../store/player.store";
 
 export default function Songs() {
   const { songs } = useLibraryStore();
-  const { currentTrack, error, isPlaying, playSong, pause, resume } = usePlayerStore();
+  const { currentTrack, error, isPlaying, playSong, pause, resume } =
+    usePlayerStore();
 
   const handlePress = async (item, isCurrentTrack) => {
     if (!isCurrentTrack) {
@@ -63,7 +64,9 @@ export default function Songs() {
               }}
             >
               <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={{ fontSize: 16, fontWeight: "500", color: "#111827" }}>
+                <Text
+                  style={{ fontSize: 16, fontWeight: "500", color: "#111827" }}
+                >
                   {item.filename}
                 </Text>
               </View>

@@ -4,8 +4,10 @@ import type { AudioStatus } from "expo-audio";
 import type { EventSubscription } from "expo-modules-core";
 
 import {
+  deactivatePlayback,
   pauseTrack,
   playTrack,
+  resetAbandonedPlayback,
   resumeTrack,
   seekTrack,
   subscribeToPlaybackStatus,
@@ -28,7 +30,8 @@ type PlayerState = {
   duration: number;
   error: string | null;
   subscription: EventSubscription | null;
-  initializePlayer: () => void;
+  cleanupPlayer: () => Promise<void>;
+  initializePlayer: () => Promise<void>;
   setQueue: (queue: MediaLibrary.Asset[]) => void;
   playSong: (
     track: MediaLibrary.Asset,
@@ -55,9 +58,33 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   error: null,
   subscription: null,
 
-  initializePlayer: () => {
+  cleanupPlayer: async () => {
+    get().subscription?.remove();
+    await deactivatePlayback();
+
+    set({
+      currentTrack: null,
+      currentIndex: -1,
+      isLoaded: false,
+      isPlaying: false,
+      position: 0,
+      duration: 0,
+      subscription: null,
+    });
+  },
+
+  initializePlayer: async () => {
+    await resetAbandonedPlayback();
+
     set({
       isReady: true,
+      isLoaded: false,
+      isPlaying: false,
+      position: 0,
+      duration: 0,
+      currentTrack: null,
+      currentIndex: -1,
+      subscription: null,
     });
   },
 

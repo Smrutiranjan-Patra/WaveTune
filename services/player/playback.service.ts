@@ -36,8 +36,9 @@ export async function configurePlaybackMode() {
     return;
   }
 
-  const { setAudioModeAsync } = await getExpoAudio();
+  const { setAudioModeAsync, setIsAudioActiveAsync } = await getExpoAudio();
 
+  await setIsAudioActiveAsync(true);
   await setAudioModeAsync({
     playsInSilentMode: true,
     interruptionMode: "doNotMix",
@@ -47,6 +48,40 @@ export async function configurePlaybackMode() {
   });
 
   audioModeConfigured = true;
+}
+
+export async function resetAbandonedPlayback() {
+  try {
+    const { setIsAudioActiveAsync } = await getExpoAudio();
+
+    if (player) {
+      player.remove();
+      player = null;
+    }
+
+    audioModeConfigured = false;
+    await setIsAudioActiveAsync(false);
+  } catch {
+    // Native audio may be unavailable in Expo Go or stale dev builds.
+    // Playback attempts still surface the guarded error message.
+  }
+}
+
+export async function deactivatePlayback() {
+  try {
+    const { setIsAudioActiveAsync } = await getExpoAudio();
+
+    if (player) {
+      player.pause();
+      player.remove();
+      player = null;
+    }
+
+    audioModeConfigured = false;
+    await setIsAudioActiveAsync(false);
+  } catch {
+    // Best-effort cleanup for dev refresh and app teardown.
+  }
 }
 
 export async function getPlaybackPlayer() {

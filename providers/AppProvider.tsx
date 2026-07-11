@@ -9,13 +9,18 @@ export default function AppProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const cleanupPlayer = usePlayerStore((state) => state.cleanupPlayer);
   const loadLibraryData = useLibraryStore((state) => state.loadLibraryData);
   const initializePlayer = usePlayerStore((state) => state.initializePlayer);
 
   useEffect(() => {
-    initializePlayer();
+    void initializePlayer();
     loadLibraryData();
-  }, [initializePlayer, loadLibraryData]);
+
+    return () => {
+      void cleanupPlayer();
+    };
+  }, [cleanupPlayer, initializePlayer, loadLibraryData]);
 
   return children;
 }
