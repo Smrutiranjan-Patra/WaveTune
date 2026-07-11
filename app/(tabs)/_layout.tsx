@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import type { ComponentProps } from "react";
+
+type IconName = ComponentProps<typeof Ionicons>["name"];
 
 export default function TabLayout() {
-  const tabs = [
+  const tabs: { name: string; label: string; icon: IconName }[] = [
     {
       name: "home",
       label: "Home",
@@ -46,7 +49,7 @@ export default function TabLayout() {
           options={{
             title: label,
             tabBarLabel: label,
-            tabBarIcon: ({ color, size }, idx) => (
+            tabBarIcon: ({ color, size }) => (
               <Ionicons name={icon} color={color} size={size} />
             ),
           }}

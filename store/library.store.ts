@@ -5,17 +5,38 @@ import * as MediaLibrary from "expo-media-library";
 
 import { loadLibraryData } from "./handlers/library.handlers";
 
+export type LibraryAlbum = {
+  id: string;
+  songs: MediaLibrary.Asset[];
+};
+
+export type LibraryArtist = {
+  name: string;
+  songs: MediaLibrary.Asset[];
+};
+
+export type LibraryGenre = {
+  name: string;
+  songs: MediaLibrary.Asset[];
+};
+
+export type LibraryFolder = {
+  name: string;
+  path: string;
+  songs: MediaLibrary.Asset[];
+};
+
 interface LibraryState {
   loading: boolean;
   initialized: boolean;
 
   songs: MediaLibrary.Asset[];
-  albums: MediaLibrary.Asset[];
-  folders: MediaLibrary.Asset[];
-  artists: MediaLibrary.Asset[];
-  genres: MediaLibrary.Asset[];
+  albums: LibraryAlbum[];
+  folders: LibraryFolder[];
+  artists: LibraryArtist[];
+  genres: LibraryGenre[];
 
-  loadLibraryData: (...args: any[]) => Promise<void>;
+  loadLibraryData: () => Promise<void>;
 }
 
 export const useLibraryStore = create<LibraryState>((set, get) => ({
@@ -28,5 +49,5 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   artists: [],
   genres: [],
 
-  loadLibraryData: (...args) => loadLibraryData(set, get, ...args),
+  loadLibraryData: () => loadLibraryData(set, get),
 }));
