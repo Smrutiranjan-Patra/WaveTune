@@ -1,8 +1,8 @@
-import * as MediaLibrary from "expo-media-library";
 import type { LibraryFolder } from "../../store/library.store";
+import type { MusicAsset } from "../../types/music";
 
-const getFolders = (songs: MediaLibrary.Asset[]): LibraryFolder[] => {
-  const folders = new Map();
+const getFolders = (songs: MusicAsset[]): LibraryFolder[] => {
+  const folders = new Map<string, LibraryFolder>();
 
   songs.forEach((song) => {
     const path = song.uri.replace("file://", "");

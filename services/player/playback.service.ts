@@ -1,5 +1,10 @@
 import { requireOptionalNativeModule } from "expo-modules-core";
-import type { AudioPlayer, AudioStatus, AudioSource } from "expo-audio";
+import type {
+  AudioMetadata,
+  AudioPlayer,
+  AudioStatus,
+  AudioSource,
+} from "expo-audio";
 
 let player: AudioPlayer | null = null;
 let audioModeConfigured = false;
@@ -55,6 +60,7 @@ export async function resetAbandonedPlayback() {
     const { setIsAudioActiveAsync } = await getExpoAudio();
 
     if (player) {
+      player.clearLockScreenControls();
       player.remove();
       player = null;
     }
@@ -73,6 +79,7 @@ export async function deactivatePlayback() {
 
     if (player) {
       player.pause();
+      player.clearLockScreenControls();
       player.remove();
       player = null;
     }
@@ -97,11 +104,15 @@ export async function getPlaybackPlayer() {
   return player;
 }
 
-export async function loadAndPlayUri(uri: string) {
+export async function loadAndPlayUri(uri: string, metadata: AudioMetadata) {
   await configurePlaybackMode();
 
   const playbackPlayer = await getPlaybackPlayer();
   playbackPlayer.replace(getSource(uri));
+  playbackPlayer.setActiveForLockScreen(true, metadata, {
+    showSeekBackward: false,
+    showSeekForward: false,
+  });
   playbackPlayer.play();
 
   return playbackPlayer;
@@ -132,6 +143,7 @@ export function releasePlayback() {
     return;
   }
 
+  player.clearLockScreenControls();
   player.remove();
   player = null;
   audioModeConfigured = false;

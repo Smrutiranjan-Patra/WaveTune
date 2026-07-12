@@ -17,6 +17,10 @@ const MIGRATION_SQL = `
     modification_time REAL NOT NULL DEFAULT 0,
     duration REAL NOT NULL DEFAULT 0,
     album_id TEXT,
+    title TEXT,
+    artist TEXT,
+    album_title TEXT,
+    genre TEXT,
     updated_at REAL NOT NULL
   );
 
@@ -71,12 +75,47 @@ const MIGRATION_SQL = `
 let databasePromise: Promise<SQLite.SQLiteDatabase | null> | null = null;
 let syncDatabase: SQLite.SQLiteDatabase | null | undefined;
 
+const songMetadataColumns = [
+  ["title", "TEXT"],
+  ["artist", "TEXT"],
+  ["album_title", "TEXT"],
+  ["genre", "TEXT"],
+] as const;
+
+async function migrateSongMetadataColumns(database: SQLite.SQLiteDatabase) {
+  const columns = await database.getAllAsync<{ name: string }>(
+    "PRAGMA table_info(songs)",
+  );
+  const existingColumns = new Set(columns.map((column) => column.name));
+
+  for (const [name, type] of songMetadataColumns) {
+    if (!existingColumns.has(name)) {
+      await database.execAsync(`ALTER TABLE songs ADD COLUMN ${name} ${type}`);
+    }
+  }
+}
+
+function migrateSongMetadataColumnsSync(database: SQLite.SQLiteDatabase) {
+  const columns = database.getAllSync<{ name: string }>(
+    "PRAGMA table_info(songs)",
+  );
+  const existingColumns = new Set(columns.map((column) => column.name));
+
+  for (const [name, type] of songMetadataColumns) {
+    if (!existingColumns.has(name)) {
+      database.execSync(`ALTER TABLE songs ADD COLUMN ${name} ${type}`);
+    }
+  }
+}
+
 async function migrateDatabase(database: SQLite.SQLiteDatabase) {
   await database.execAsync(MIGRATION_SQL);
+  await migrateSongMetadataColumns(database);
 }
 
 function migrateDatabaseSync(database: SQLite.SQLiteDatabase) {
   database.execSync(MIGRATION_SQL);
+  migrateSongMetadataColumnsSync(database);
 }
 
 export async function getDatabase() {

@@ -31,11 +31,11 @@ type DisplaySong = {
 };
 
 function toDisplaySongs(songs: MediaLibrary.Asset[]) {
-  return songs.map((song, index) => ({
-    artist: getTrackArtist(index),
+  return songs.map((song) => ({
+    artist: getTrackArtist(song),
     asset: song,
     id: song.id,
-    title: getTrackTitle(song.filename),
+    title: getTrackTitle(song),
   }));
 }
 

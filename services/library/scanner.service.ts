@@ -1,5 +1,6 @@
 import * as MediaLibrary from "expo-media-library";
 import { useSettingsStore } from "../../store/settings.store";
+import { enrichSongMetadata } from "./metadata.service";
 
 const normalizeFolderPath = (folderPath: string) => {
   const trimmedPath = folderPath.trim();
@@ -51,7 +52,7 @@ export async function scanSongs() {
     after = result.endCursor;
   }
 
-  return songs.filter((song) => {
+  const includedSongs = songs.filter((song) => {
     const folderPath = getAssetFolderPath(song);
 
     return !excludedFolderPaths.some((excludedFolder) => {
@@ -63,6 +64,8 @@ export async function scanSongs() {
       );
     });
   });
+
+  return enrichSongMetadata(includedSongs);
 }
 
 export async function getAvailableMusicFolders() {

@@ -1,8 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import type * as MediaLibrary from "expo-media-library";
 import type { ComponentProps, ReactNode } from "react";
 import { Image, Pressable, Text, useColorScheme, View } from "react-native";
 
 import { useSettingsStore } from "../store/settings.store";
+import type { MusicAsset } from "../types/music";
+import { UNKNOWN_ARTIST } from "../types/music";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -62,7 +65,17 @@ export function softShadow(
   };
 }
 
-export function getTrackTitle(filename?: string) {
+export function getTrackTitle(source?: string | MediaLibrary.Asset) {
+  const metadataTitle =
+    typeof source === "object"
+      ? (source as MusicAsset).title?.trim()
+      : undefined;
+  const filename = typeof source === "string" ? source : source?.filename;
+
+  if (metadataTitle) {
+    return metadataTitle;
+  }
+
   if (!filename) {
     return "Unknown Track";
   }
@@ -70,8 +83,10 @@ export function getTrackTitle(filename?: string) {
   return filename.replace(/\.[^/.]+$/, "");
 }
 
-export function getTrackArtist(_index?: number) {
-  return "Unknown Artist";
+export function getTrackArtist(source?: number | MediaLibrary.Asset) {
+  return typeof source === "object"
+    ? (source as MusicAsset).artist?.trim() || UNKNOWN_ARTIST
+    : UNKNOWN_ARTIST;
 }
 
 export function formatTime(totalSeconds?: number) {

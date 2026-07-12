@@ -43,7 +43,9 @@ export default function SongDetailsScreen() {
   const playSong = usePlayerStore((state) => state.playSong);
   const favoriteSongIds = useUserLibraryStore((state) => state.favoriteSongIds);
   const playlists = useUserLibraryStore((state) => state.playlists);
-  const setPlaylistSongs = useUserLibraryStore((state) => state.setPlaylistSongs);
+  const setPlaylistSongs = useUserLibraryStore(
+    (state) => state.setPlaylistSongs,
+  );
   const toggleFavorite = useUserLibraryStore((state) => state.toggleFavorite);
   const songIndex = songs.findIndex((item) => item.id === id);
   const song = songs[songIndex];
@@ -177,10 +179,10 @@ export default function SongDetailsScreen() {
             textAlign: "center",
           }}
         >
-          {getTrackTitle(song.filename)}
+          {getTrackTitle(song)}
         </Text>
         <Text style={{ color: theme.secondary, fontSize: 13, marginTop: 6 }}>
-          {getTrackArtist(songIndex)}
+          {getTrackArtist(song)}
         </Text>
 
         <Pressable
@@ -222,6 +224,9 @@ export default function SongDetailsScreen() {
         ]}
       >
         <DetailRow label="Duration" value={formatTime(song.duration ?? 0)} />
+        <DetailRow label="Artist" value={song.artist ?? "Unknown Artist"} />
+        <DetailRow label="Album" value={song.albumTitle ?? "Unknown Album"} />
+        <DetailRow label="Genre" value={song.genre ?? "Unknown Genre"} />
         <DetailRow label="File Name" value={song.filename} />
         <DetailRow label="Media ID" value={song.id} />
         <DetailRow
@@ -251,11 +256,15 @@ export default function SongDetailsScreen() {
             marginBottom: 10,
           }}
         >
-          <Text style={{ color: theme.primary, fontSize: 16, fontWeight: "900" }}>
+          <Text
+            style={{ color: theme.primary, fontSize: 16, fontWeight: "900" }}
+          >
             Playlists
           </Text>
           <Pressable onPress={() => router.push("/playlist/new")}>
-            <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "900" }}>
+            <Text
+              style={{ color: theme.accent, fontSize: 12, fontWeight: "900" }}
+            >
               New Playlist
             </Text>
           </Pressable>
@@ -273,7 +282,9 @@ export default function SongDetailsScreen() {
                   style={[
                     {
                       alignItems: "center",
-                      backgroundColor: selected ? `${theme.accent}18` : theme.card,
+                      backgroundColor: selected
+                        ? `${theme.accent}18`
+                        : theme.card,
                       borderColor: selected ? theme.accent : theme.border,
                       borderRadius: 16,
                       borderWidth: 1,
@@ -288,7 +299,11 @@ export default function SongDetailsScreen() {
                   <View style={{ flex: 1 }}>
                     <Text
                       numberOfLines={1}
-                      style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
+                      style={{
+                        color: theme.primary,
+                        fontSize: 13,
+                        fontWeight: "900",
+                      }}
                     >
                       {playlist.name}
                     </Text>
@@ -318,10 +333,14 @@ export default function SongDetailsScreen() {
               softShadow(theme.isDark, "low"),
             ]}
           >
-            <Text style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}>
+            <Text
+              style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
+            >
               No playlists yet
             </Text>
-            <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}>
+            <Text
+              style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}
+            >
               Create a playlist, then add this song from here.
             </Text>
           </View>

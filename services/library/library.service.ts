@@ -1,4 +1,4 @@
-import * as MediaLibrary from "expo-media-library";
+import type { MusicAsset } from "../../types/music";
 
 import {
   getPersistedSongs,
@@ -12,7 +12,7 @@ import { getArtists } from "../../helpers/library/artists";
 import { getGenres } from "../../helpers/library/genres";
 import { getFolders } from "../../helpers/library/folders";
 
-function buildLibrary(songs: MediaLibrary.Asset[]) {
+function buildLibrary(songs: MusicAsset[]) {
   return {
     songs,
     albums: getAlbums(songs),

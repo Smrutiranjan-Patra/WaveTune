@@ -70,7 +70,7 @@ export default function MiniPlayer() {
             numberOfLines={1}
             style={{ color: theme.primary, fontSize: 13, fontWeight: "800" }}
           >
-            {getTrackTitle(currentTrack.filename)}
+            {getTrackTitle(currentTrack)}
           </Text>
           <Text
             numberOfLines={1}

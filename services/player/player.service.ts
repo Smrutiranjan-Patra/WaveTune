@@ -1,6 +1,8 @@
 import * as MediaLibrary from "expo-media-library";
 import type { EventSubscription } from "expo-modules-core";
 import type { AudioStatus } from "expo-audio";
+import type { MusicAsset } from "../../types/music";
+import { UNKNOWN_ALBUM, UNKNOWN_ARTIST } from "../../types/music";
 
 import {
   getPlaybackPlayer,
@@ -28,7 +30,14 @@ export async function playTrack(track: MediaLibrary.Asset) {
   }
 
   const uri = await getPlayableTrackUri(track);
-  const player = await loadAndPlayUri(uri);
+  const metadata = track as MusicAsset;
+  const title =
+    metadata.title?.trim() || track.filename.replace(/\.[^/.]+$/, "");
+  const player = await loadAndPlayUri(uri, {
+    albumTitle: metadata.albumTitle?.trim() || UNKNOWN_ALBUM,
+    artist: metadata.artist?.trim() || UNKNOWN_ARTIST,
+    title,
+  });
 
   return {
     player,

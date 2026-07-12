@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -59,16 +60,20 @@ export default function OnboardingScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ backgroundColor: theme.background, flex: 1 }}
     >
-      <View
-        style={{
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={{
           alignItems: "center",
-          flex: 1,
+          flexGrow: 1,
           justifyContent: "center",
           paddingHorizontal: 24,
+          paddingVertical: 24,
         }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View
           style={[
@@ -180,7 +185,7 @@ export default function OnboardingScreen() {
             <Ionicons name="arrow-forward" color="#FFFFFF" size={18} />
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

@@ -169,7 +169,7 @@ export default function Songs() {
 
         return (
           <SongListRow
-            artist={getTrackArtist(index)}
+            artist={getTrackArtist(item)}
             duration={item.duration}
             index={index}
             isCurrentTrack={isCurrentTrack}
@@ -178,7 +178,7 @@ export default function Songs() {
               void handlePress(item, isCurrentTrack);
             }}
             onDetailPress={() => router.push(`/song/${item.id}`)}
-            title={getTrackTitle(item.filename)}
+            title={getTrackTitle(item)}
           />
         );
       }}

@@ -42,9 +42,7 @@ export default function LibraryGroupScreen() {
   if (type === "album") {
     const album = albums.find((item) => item.id === params.key);
     songs = album?.songs ?? [];
-    fallbackTitle = album
-      ? getTrackTitle(album.songs[0]?.filename ?? album.id)
-      : "Album";
+    fallbackTitle = album?.name ?? "Album";
   } else if (type === "artist") {
     const artist = artists.find((item) => item.name === params.key);
     songs = artist?.songs ?? [];
@@ -157,14 +155,14 @@ export default function LibraryGroupScreen() {
 
           return (
             <SongListRow
-              artist={getTrackArtist(index)}
+              artist={getTrackArtist(item)}
               duration={item.duration}
               index={index}
               isCurrentTrack={isCurrentTrack}
               isPlaying={isPlaying}
               onDetailPress={() => router.push(`/song/${item.id}`)}
               onPress={() => void handlePress(item)}
-              title={getTrackTitle(item.filename)}
+              title={getTrackTitle(item)}
             />
           );
         }}

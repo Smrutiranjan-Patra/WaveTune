@@ -155,14 +155,14 @@ export default function CollectionScreen() {
 
           return (
             <SongListRow
-              artist={getTrackArtist(index)}
+              artist={getTrackArtist(item)}
               duration={item.duration}
               index={index}
               isCurrentTrack={isCurrent}
               isPlaying={isPlaying}
               onDetailPress={() => router.push(`/song/${item.id}`)}
               onPress={() => void handlePress(item)}
-              title={getTrackTitle(item.filename)}
+              title={getTrackTitle(item)}
             />
           );
         }}

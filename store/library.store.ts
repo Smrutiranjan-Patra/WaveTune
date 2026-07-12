@@ -1,29 +1,30 @@
 // src/store/library.store.ts
 
 import { create } from "zustand";
-import * as MediaLibrary from "expo-media-library";
 
 import { loadLibraryData } from "./handlers/library.handlers";
+import type { MusicAsset } from "../types/music";
 
 export type LibraryAlbum = {
   id: string;
-  songs: MediaLibrary.Asset[];
+  name: string;
+  songs: MusicAsset[];
 };
 
 export type LibraryArtist = {
   name: string;
-  songs: MediaLibrary.Asset[];
+  songs: MusicAsset[];
 };
 
 export type LibraryGenre = {
   name: string;
-  songs: MediaLibrary.Asset[];
+  songs: MusicAsset[];
 };
 
 export type LibraryFolder = {
   name: string;
   path: string;
-  songs: MediaLibrary.Asset[];
+  songs: MusicAsset[];
 };
 
 interface LibraryState {
@@ -32,7 +33,7 @@ interface LibraryState {
   error: string | null;
   lastScanCount: number;
 
-  songs: MediaLibrary.Asset[];
+  songs: MusicAsset[];
   albums: LibraryAlbum[];
   folders: LibraryFolder[];
   artists: LibraryArtist[];

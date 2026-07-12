@@ -12,6 +12,10 @@ import {
 } from "../../components/DesignSystem";
 import { useLibraryStore } from "../../store/library.store";
 import { useUserLibraryStore } from "../../store/user-library.store";
+import {
+  generatePlaylistName,
+  isPlaylistNameTaken,
+} from "../../utils/playlist";
 
 export default function PlaylistDetailsScreen() {
   const theme = useAppTheme();
@@ -23,11 +27,29 @@ export default function PlaylistDetailsScreen() {
   const updatePlaylist = useUserLibraryStore((state) => state.updatePlaylist);
   const isNewPlaylist = id === "new";
   const playlist = playlists.find((item) => item.id === id);
-  const [name, setName] = useState(playlist?.name ?? "");
+  const existingPlaylistNames = useMemo(
+    () => [
+      "Favorites",
+      ...playlists
+        .filter((item) => item.id !== playlist?.id)
+        .map((item) => item.name),
+    ],
+    [playlist?.id, playlists],
+  );
+  const [name, setName] = useState(
+    () => playlist?.name ?? generatePlaylistName(existingPlaylistNames),
+  );
   const [selectedSongIds, setSelectedSongIds] = useState<string[]>(
     playlist?.songIds ?? [],
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const trimmedName = name.trim();
+  const duplicateName = isPlaylistNameTaken(trimmedName, existingPlaylistNames);
+  const nameError = !trimmedName
+    ? "Playlist name is required."
+    : duplicateName
+      ? "A playlist with this name already exists."
+      : null;
 
   const selectedSongSet = useMemo(
     () => new Set(selectedSongIds),
@@ -41,9 +63,7 @@ export default function PlaylistDetailsScreen() {
     }
 
     return songs.filter((song) =>
-      getTrackTitle(song.filename)
-        .toLocaleLowerCase()
-        .includes(normalizedQuery),
+      getTrackTitle(song).toLocaleLowerCase().includes(normalizedQuery),
     );
   }, [searchQuery, songs]);
 
@@ -56,9 +76,15 @@ export default function PlaylistDetailsScreen() {
   };
 
   const handleSave = () => {
+    if (nameError) {
+      return;
+    }
+
     if (isNewPlaylist) {
       const playlistId = createPlaylist(name, selectedSongIds);
-      router.replace(`/playlist/${playlistId}`);
+      if (playlistId) {
+        router.replace(`/playlist/${playlistId}`);
+      }
       return;
     }
 
@@ -166,6 +192,7 @@ export default function PlaylistDetailsScreen() {
                     PLAYLIST NAME
                   </Text>
                   <TextInput
+                    maxLength={40}
                     onChangeText={setName}
                     placeholder="Playlist name"
                     placeholderTextColor={theme.muted}
@@ -177,6 +204,13 @@ export default function PlaylistDetailsScreen() {
                     }}
                     value={name}
                   />
+                  {nameError ? (
+                    <Text
+                      style={{ color: "#EF476F", fontSize: 11, marginTop: 6 }}
+                    >
+                      {nameError}
+                    </Text>
+                  ) : null}
                   <Text
                     style={{
                       color: theme.secondary,
@@ -207,6 +241,7 @@ export default function PlaylistDetailsScreen() {
                 Add Songs
               </Text>
               <Pressable
+                disabled={Boolean(nameError)}
                 onPress={handleSave}
                 style={{
                   alignItems: "center",
@@ -215,6 +250,7 @@ export default function PlaylistDetailsScreen() {
                   flexDirection: "row",
                   gap: 6,
                   minHeight: 36,
+                  opacity: nameError ? 0.45 : 1,
                   paddingHorizontal: 14,
                 }}
               >
@@ -353,13 +389,13 @@ export default function PlaylistDetailsScreen() {
                     fontWeight: "900",
                   }}
                 >
-                  {getTrackTitle(item.filename)}
+                  {getTrackTitle(item)}
                 </Text>
                 <Text
                   numberOfLines={1}
                   style={{ color: theme.secondary, fontSize: 11 }}
                 >
-                  {getTrackArtist(index)}
+                  {getTrackArtist(item)}
                 </Text>
               </View>
               <Ionicons

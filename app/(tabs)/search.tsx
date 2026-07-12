@@ -27,9 +27,7 @@ export default function SearchScreen() {
     }
 
     return songs.filter((song) =>
-      getTrackTitle(song.filename)
-        .toLocaleLowerCase()
-        .includes(normalizedQuery),
+      getTrackTitle(song).toLocaleLowerCase().includes(normalizedQuery),
     );
   }, [normalizedQuery, songs]);
 
@@ -177,14 +175,14 @@ export default function SearchScreen() {
 
           return (
             <SongListRow
-              artist={getTrackArtist(index)}
+              artist={getTrackArtist(item)}
               duration={item.duration}
               index={index}
               isCurrentTrack={isCurrentTrack}
               isPlaying={isPlaying}
               onDetailPress={() => router.push(`/song/${item.id}`)}
               onPress={() => void handlePress(item)}
-              title={getTrackTitle(item.filename)}
+              title={getTrackTitle(item)}
             />
           );
         }}

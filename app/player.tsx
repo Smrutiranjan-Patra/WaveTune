@@ -177,15 +177,23 @@ export default function PlayerScreen() {
           }}
         />
         <View style={{ alignItems: "center" }}>
-          <Text style={{ color: theme.secondary, fontSize: 10, fontWeight: "900" }}>
+          <Text
+            style={{ color: theme.secondary, fontSize: 10, fontWeight: "900" }}
+          >
             PLAYING FROM
           </Text>
-          <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "900" }}>
+          <Text
+            style={{ color: theme.primary, fontSize: 12, fontWeight: "900" }}
+          >
             Chill Vibes
           </Text>
         </View>
         <RoundButton
-          icon={favoriteSongIds.includes(currentTrack.id) ? "heart" : "heart-outline"}
+          icon={
+            favoriteSongIds.includes(currentTrack.id)
+              ? "heart"
+              : "heart-outline"
+          }
           onPress={() => toggleFavorite(currentTrack.id)}
         />
       </View>
@@ -246,10 +254,10 @@ export default function PlayerScreen() {
               textAlign: "center",
             }}
           >
-            {getTrackTitle(currentTrack.filename)}
+            {getTrackTitle(currentTrack)}
           </Text>
           <Text style={{ color: theme.secondary, fontSize: 13, marginTop: 6 }}>
-            {getTrackArtist(currentIndex)}
+            {getTrackArtist(currentTrack)}
           </Text>
         </View>
 
@@ -374,16 +382,19 @@ export default function PlayerScreen() {
             softShadow(theme.isDark, "low"),
           ]}
         >
-          {["list", "timer-outline", "share-social-outline", "options-outline"].map(
-            (icon) => (
-              <Ionicons
-                key={icon}
-                name={icon as IconName}
-                color={theme.secondary}
-                size={20}
-              />
-            ),
-          )}
+          {[
+            "list",
+            "timer-outline",
+            "share-social-outline",
+            "options-outline",
+          ].map((icon) => (
+            <Ionicons
+              key={icon}
+              name={icon as IconName}
+              color={theme.secondary}
+              size={20}
+            />
+          ))}
         </View>
       </View>
     </View>

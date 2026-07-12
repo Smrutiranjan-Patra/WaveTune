@@ -11,6 +11,7 @@ import {
   savePlaylist,
   setFavoriteSong,
 } from "../services/database/user-library.repository";
+import { generatePlaylistName, isPlaylistNameTaken } from "../utils/playlist";
 
 interface UserLibraryState {
   favoriteSongIds: string[];
@@ -63,10 +64,21 @@ export const useUserLibraryStore = create<UserLibraryState>((set, get) => ({
   },
   createPlaylist: (name, songIds = []) => {
     const now = Date.now();
+    const existingNames = [
+      "Favorites",
+      ...get().playlists.map((item) => item.name),
+    ];
+    const requestedName = name.trim();
+    const playlistName = requestedName || generatePlaylistName(existingNames);
+
+    if (isPlaylistNameTaken(playlistName, existingNames)) {
+      return "";
+    }
+
     const playlist: PlaylistRecord = {
       createdAt: now,
       id: `playlist-${now}`,
-      name: name.trim() || "New Playlist",
+      name: playlistName,
       songIds: [...new Set(songIds)],
       updatedAt: now,
     };
@@ -75,10 +87,27 @@ export const useUserLibraryStore = create<UserLibraryState>((set, get) => ({
     return playlist.id;
   },
   deletePlaylist: (playlistId) => {
-    set({ playlists: get().playlists.filter((playlist) => playlist.id !== playlistId) });
+    set({
+      playlists: get().playlists.filter(
+        (playlist) => playlist.id !== playlistId,
+      ),
+    });
     void deletePersistedPlaylist(playlistId);
   },
   updatePlaylist: (playlistId, updates) => {
+    if (
+      updates.name !== undefined &&
+      (!updates.name.trim() ||
+        isPlaylistNameTaken(updates.name, [
+          "Favorites",
+          ...get()
+            .playlists.filter((playlist) => playlist.id !== playlistId)
+            .map((playlist) => playlist.name),
+        ]))
+    ) {
+      return;
+    }
+
     const playlists = get().playlists.map((playlist) => {
       if (playlist.id !== playlistId) {
         return playlist;
@@ -86,10 +115,7 @@ export const useUserLibraryStore = create<UserLibraryState>((set, get) => ({
 
       return {
         ...playlist,
-        name:
-          updates.name !== undefined
-            ? updates.name.trim() || "New Playlist"
-            : playlist.name,
+        name: updates.name !== undefined ? updates.name.trim() : playlist.name,
         songIds:
           updates.songIds !== undefined
             ? [...new Set(updates.songIds)]

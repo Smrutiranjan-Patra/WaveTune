@@ -3,7 +3,6 @@ import { FlatList, Pressable, Text, useWindowDimensions } from "react-native";
 
 import {
   Artwork,
-  getTrackTitle,
   softShadow,
   useAppTheme,
 } from "../../../components/DesignSystem";
@@ -18,7 +17,7 @@ export default function Albums() {
   const data = albums.map((album, index) => ({
     id: album.id,
     songs: album.songs.length,
-    title: getTrackTitle(album.songs[0]?.filename ?? album.id),
+    title: album.name,
     index,
   }));
 
