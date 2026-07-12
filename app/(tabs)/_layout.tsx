@@ -1,10 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import type { ComponentProps } from "react";
+import { View } from "react-native";
+
+import { softShadow, useAppTheme } from "../../components/DesignSystem";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
 export default function TabLayout() {
+  const theme = useAppTheme();
   const tabs: { name: string; label: string; icon: IconName }[] = [
     {
       name: "home",
@@ -38,8 +42,26 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: "#6363ff",
-        tabBarInactiveTintColor: "#1E1E1E",
+        tabBarActiveTintColor: theme.accent,
+        tabBarInactiveTintColor: theme.tabInactive,
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "700",
+        },
+        tabBarStyle: {
+          backgroundColor: theme.card,
+          borderColor: theme.border,
+          borderRadius: 24,
+          borderTopWidth: 1,
+          bottom: 10,
+          height: 64,
+          left: 14,
+          paddingBottom: 8,
+          paddingTop: 7,
+          position: "absolute",
+          right: 14,
+          ...softShadow(theme.isDark, "high"),
+        },
       }}
     >
       {tabs.map(({ name, label, icon }) => (
@@ -49,9 +71,39 @@ export default function TabLayout() {
           options={{
             title: label,
             tabBarLabel: label,
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name={icon} color={color} size={size} />
-            ),
+            tabBarIcon: ({ color, focused }) => {
+              const resolvedIcon =
+                focused && icon.endsWith("-outline")
+                  ? (icon.replace("-outline", "") as IconName)
+                  : icon;
+
+              if (name === "search") {
+                return (
+                  <View
+                    style={{
+                      alignItems: "center",
+                      backgroundColor: theme.accent,
+                      borderRadius: 22,
+                      height: 44,
+                      justifyContent: "center",
+                      marginTop: -18,
+                      width: 44,
+                      ...softShadow(theme.isDark, "high"),
+                    }}
+                  >
+                    <Ionicons name={resolvedIcon} color="#FFFFFF" size={23} />
+                  </View>
+                );
+              }
+
+              return (
+                <Ionicons
+                  name={resolvedIcon}
+                  color={color}
+                  size={focused ? 23 : 21}
+                />
+              );
+            },
           }}
         />
       ))}

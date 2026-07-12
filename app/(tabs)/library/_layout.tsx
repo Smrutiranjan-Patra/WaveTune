@@ -1,9 +1,13 @@
 import { withLayoutContext } from "expo-router";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { Text, View } from "react-native";
+
+import { useAppTheme } from "../../../components/DesignSystem";
 
 const { Navigator } = createMaterialTopTabNavigator();
 
 export default function LibraryLayout() {
+  const theme = useAppTheme();
   const TopTabs = withLayoutContext(Navigator);
 
   const libraryTabs = [
@@ -15,28 +19,47 @@ export default function LibraryLayout() {
   ];
 
   return (
+    <View style={{ backgroundColor: theme.background, flex: 1 }}>
+      <Text
+        style={{
+          color: theme.primary,
+          fontSize: 24,
+          fontWeight: "900",
+          paddingHorizontal: 22,
+          paddingTop: 10,
+        }}
+      >
+        Library
+      </Text>
     <TopTabs
       id={"library-tabs"}
       screenOptions={{
         tabBarScrollEnabled: true,
         tabBarShowIcon: false,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: theme.background,
           elevation: 0,
+          paddingHorizontal: 14,
           shadowOpacity: 0,
         },
         tabBarIndicatorStyle: {
-          backgroundColor: "#6363ff",
-          height: 3,
-          borderRadius: 2,
+          backgroundColor: theme.accent,
+          borderRadius: 8,
+          height: 28,
+        },
+        tabBarItemStyle: {
+          minHeight: 36,
+          paddingHorizontal: 0,
+          width: "auto",
         },
         tabBarLabelStyle: {
           textTransform: "none",
-          fontSize: 14,
-          fontWeight: "600",
+          fontSize: 12,
+          fontWeight: "800",
+          marginHorizontal: 10,
         },
-        tabBarActiveTintColor: "#6363ff",
-        tabBarInactiveTintColor: "#666666",
+        tabBarActiveTintColor: "#FFFFFF",
+        tabBarInactiveTintColor: theme.secondary,
       }}
     >
       {libraryTabs.map((tab) => (
@@ -49,5 +72,6 @@ export default function LibraryLayout() {
         />
       ))}
     </TopTabs>
+    </View>
   );
 }

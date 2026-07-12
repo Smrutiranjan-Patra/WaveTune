@@ -2,13 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
+import { Artwork, getTrackTitle, softShadow, useAppTheme } from "./DesignSystem";
 import { usePlayerStore } from "../store/player.store";
 
-function getTrackTitle(filename: string) {
-  return filename.replace(/\.[^/.]+$/, "");
-}
-
 export default function MiniPlayer() {
+  const theme = useAppTheme();
   const pathname = usePathname();
   const { currentTrack, duration, isPlaying, position, togglePlayback } =
     usePlayerStore();
@@ -26,60 +24,49 @@ export default function MiniPlayer() {
       }}
       style={{
         position: "absolute",
-        left: 12,
-        right: 12,
-        bottom: 70,
-        borderRadius: 8,
-        backgroundColor: "#FEF2F2",
+        left: 18,
+        right: 18,
+        bottom: 76,
+        borderRadius: 16,
+        backgroundColor: theme.card,
+        borderColor: theme.border,
+        borderWidth: 1,
         overflow: "hidden",
-        shadowColor: "#000",
-        shadowOpacity: 0.16,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 8,
+        ...softShadow(theme.isDark, "high"),
       }}
     >
       <View
         style={{
           height: 3,
           width: `${progress * 100}%`,
-          backgroundColor: "#4F46E5",
+          backgroundColor: theme.accent,
         }}
       />
 
       <View
         style={{
           minHeight: 58,
-          paddingHorizontal: 14,
+          paddingHorizontal: 10,
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
         }}
       >
-        <View
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 6,
-            backgroundColor: "#4F46E5",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Ionicons name="musical-note" color="#4F46E5" size={20} />
-        </View>
+        <Artwork size={42} index={1} />
 
         <View style={{ flex: 1 }}>
           <Text
             numberOfLines={1}
-            style={{ color: "#4F46E5", fontSize: 14, fontWeight: "700" }}
+            style={{ color: theme.primary, fontSize: 13, fontWeight: "800" }}
           >
             {getTrackTitle(currentTrack.filename)}
           </Text>
-          <Text numberOfLines={1} style={{ color: "#9CA3AF", fontSize: 12 }}>
+          <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
             Now playing
           </Text>
         </View>
+
+        <Ionicons name="options-outline" color={theme.accent} size={18} />
 
         <Pressable
           onPress={(event) => {
@@ -90,14 +77,16 @@ export default function MiniPlayer() {
           style={{
             width: 42,
             height: 42,
+            borderRadius: 21,
+            backgroundColor: theme.accent,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
           <Ionicons
             name={isPlaying ? "pause" : "play"}
-            color="#4F46E5"
-            size={26}
+            color="#FFFFFF"
+            size={22}
           />
         </Pressable>
       </View>

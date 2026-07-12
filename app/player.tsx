@@ -1,25 +1,65 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import type { ComponentProps } from "react";
 import { useRef, useState } from "react";
 import { PanResponder, Pressable, Text, View } from "react-native";
 
+import {
+  Artwork,
+  formatTime,
+  getTrackArtist,
+  getTrackTitle,
+  softShadow,
+  useAppTheme,
+} from "../components/DesignSystem";
 import { usePlayerStore } from "../store/player.store";
 
-function formatTime(totalSeconds: number) {
-  const safeSeconds = Number.isFinite(totalSeconds)
-    ? Math.max(totalSeconds, 0)
-    : 0;
-  const minutes = Math.floor(safeSeconds / 60);
-  const seconds = Math.floor(safeSeconds % 60);
+type IconName = ComponentProps<typeof Ionicons>["name"];
 
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
+function RoundButton({
+  disabled,
+  icon,
+  onPress,
+  prominent = false,
+}: {
+  disabled?: boolean;
+  icon: IconName;
+  onPress: () => void;
+  prominent?: boolean;
+}) {
+  const theme = useAppTheme();
+  const size = prominent ? 76 : 46;
 
-function getTrackTitle(filename: string) {
-  return filename.replace(/\.[^/.]+$/, "");
+  return (
+    <Pressable
+      disabled={disabled}
+      onPress={onPress}
+      style={[
+        {
+          alignItems: "center",
+          backgroundColor: prominent ? theme.accent : theme.card,
+          borderColor: prominent ? theme.accent : theme.border,
+          borderRadius: size / 2,
+          borderWidth: 1,
+          height: size,
+          justifyContent: "center",
+          opacity: disabled ? 0.35 : 1,
+          width: size,
+        },
+        softShadow(theme.isDark, prominent ? "high" : "low"),
+      ]}
+    >
+      <Ionicons
+        name={icon}
+        color={prominent ? "#FFFFFF" : theme.icon}
+        size={prominent ? 34 : 22}
+      />
+    </Pressable>
+  );
 }
 
 export default function PlayerScreen() {
+  const theme = useAppTheme();
   const {
     currentIndex,
     currentTrack,
@@ -63,7 +103,6 @@ export default function PlayerScreen() {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => duration > 0,
       onMoveShouldSetPanResponder: () => duration > 0,
       onPanResponderGrant: (event) => {
         const nextPosition = getSeekPosition(event.nativeEvent.locationX);
@@ -71,8 +110,7 @@ export default function PlayerScreen() {
         setScrubPosition(nextPosition);
       },
       onPanResponderMove: (event) => {
-        const nextPosition = getSeekPosition(event.nativeEvent.locationX);
-        setScrubPosition(nextPosition);
+        setScrubPosition(getSeekPosition(event.nativeEvent.locationX));
       },
       onPanResponderRelease: (event) => {
         setIsScrubbing(false);
@@ -81,6 +119,7 @@ export default function PlayerScreen() {
       onPanResponderTerminate: () => {
         setIsScrubbing(false);
       },
+      onStartShouldSetPanResponder: () => duration > 0,
     }),
   ).current;
 
@@ -88,23 +127,23 @@ export default function PlayerScreen() {
     return (
       <View
         style={{
+          backgroundColor: theme.background,
           flex: 1,
-          backgroundColor: "#F4F6FA",
-          padding: 20,
           justifyContent: "center",
+          padding: 24,
         }}
       >
         <Pressable
           onPress={() => router.back()}
-          style={{ position: "absolute", top: 18, left: 16, padding: 8 }}
+          style={{ left: 16, padding: 8, position: "absolute", top: 18 }}
         >
-          <Ionicons name="chevron-down" size={28} color="#111827" />
+          <Ionicons name="chevron-down" size={28} color={theme.icon} />
         </Pressable>
 
-        <Text style={{ fontSize: 24, fontWeight: "800", color: "#111827" }}>
+        <Text style={{ color: theme.primary, fontSize: 24, fontWeight: "900" }}>
           No song selected
         </Text>
-        <Text style={{ marginTop: 8, fontSize: 14, color: "#6B7280" }}>
+        <Text style={{ color: theme.secondary, fontSize: 14, marginTop: 8 }}>
           Pick a song from your library to start playback.
         </Text>
       </View>
@@ -114,79 +153,97 @@ export default function PlayerScreen() {
   return (
     <View
       style={{
+        backgroundColor: theme.background,
         flex: 1,
-        backgroundColor: "#F4F6FA",
-        paddingHorizontal: 22,
-        paddingTop: 16,
-        paddingBottom: 26,
+        paddingBottom: 28,
+        paddingHorizontal: 24,
+        paddingTop: 14,
       }}
     >
       <View
         style={{
-          flexDirection: "row",
           alignItems: "center",
+          flexDirection: "row",
           justifyContent: "space-between",
         }}
       >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={12}
-          style={{
-            width: 42,
-            height: 42,
-            alignItems: "center",
-            justifyContent: "center",
+        <RoundButton
+          icon="chevron-down"
+          onPress={() => {
+            router.back();
           }}
-        >
-          <Ionicons name="chevron-down" size={30} color="#111827" />
-        </Pressable>
-
-        <Text style={{ fontSize: 14, fontWeight: "700", color: "#6B7280" }}>
-          Now Playing
-        </Text>
-
-        <View style={{ width: 42 }} />
+        />
+        <View style={{ alignItems: "center" }}>
+          <Text style={{ color: theme.secondary, fontSize: 10, fontWeight: "900" }}>
+            PLAYING FROM
+          </Text>
+          <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "900" }}>
+            Chill Vibes
+          </Text>
+        </View>
+        <RoundButton icon="heart-outline" onPress={() => {}} />
       </View>
 
       <View
         style={{
-          flex: 1,
           alignItems: "center",
+          flex: 1,
           justifyContent: "center",
-          gap: 28,
+          gap: 24,
         }}
       >
         <View
-          style={{
-            width: "84%",
-            aspectRatio: 1,
-            borderRadius: 8,
-            backgroundColor: "#111827",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          style={[
+            {
+              alignItems: "center",
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+              borderRadius: 32,
+              borderWidth: 1,
+              height: 256,
+              justifyContent: "center",
+              width: 256,
+            },
+            softShadow(theme.isDark, "high"),
+          ]}
         >
-          <Ionicons name="musical-notes" size={92} color="#9AD872" />
+          {Array.from({ length: 26 }).map((_, index) => {
+            const height = 26 + ((index * 11) % 42);
+            return (
+              <View
+                key={index}
+                style={{
+                  backgroundColor: index % 2 ? "#3882F6" : theme.accent,
+                  borderRadius: 2,
+                  height,
+                  left: 126 + Math.cos(index * 0.241) * 106,
+                  opacity: 0.5,
+                  position: "absolute",
+                  top: 126 + Math.sin(index * 0.241) * 88 - height / 2,
+                  transform: [{ rotate: `${index * 14}deg` }],
+                  width: 4,
+                }}
+              />
+            );
+          })}
+          <Artwork size={176} index={0} />
         </View>
 
-        <View style={{ width: "100%", alignItems: "center" }}>
+        <View style={{ alignItems: "center", width: "100%" }}>
           <Text
             numberOfLines={2}
             style={{
-              textAlign: "center",
-              fontSize: 24,
+              color: theme.primary,
+              fontSize: 25,
+              fontWeight: "900",
               lineHeight: 30,
-              fontWeight: "800",
-              color: "#111827",
+              textAlign: "center",
             }}
           >
             {getTrackTitle(currentTrack.filename)}
           </Text>
-          <Text
-            numberOfLines={1}
-            style={{ marginTop: 8, fontSize: 14, color: "#6B7280" }}
-          >
-            Track {currentIndex + 1} of {queue.length}
+          <Text style={{ color: theme.secondary, fontSize: 13, marginTop: 6 }}>
+            {getTrackArtist(currentIndex)}
           </Text>
         </View>
 
@@ -196,159 +253,131 @@ export default function PlayerScreen() {
               progressBarWidth.current = event.nativeEvent.layout.width;
             }}
             {...panResponder.panHandlers}
-            style={{
-              height: 28,
-              justifyContent: "center",
-            }}
+            style={{ height: 30, justifyContent: "center" }}
           >
             <View
               style={{
-                height: 8,
-                borderRadius: 8,
-                backgroundColor: "#D1D5DB",
+                backgroundColor: theme.track,
+                borderRadius: 999,
+                height: 7,
                 overflow: "hidden",
               }}
             >
               <View
                 style={{
-                  width: `${progress * 100}%`,
+                  backgroundColor: theme.accent,
                   height: "100%",
-                  backgroundColor: "#111827",
+                  width: `${progress * 100}%`,
                 }}
               />
             </View>
             <View
               pointerEvents="none"
               style={{
-                position: "absolute",
-                left: `${progress * 100}%`,
-                width: 18,
-                height: 18,
-                marginLeft: -9,
-                borderRadius: 8,
-                backgroundColor: "#111827",
+                backgroundColor: theme.accent,
+                borderColor: theme.card,
+                borderRadius: 9,
                 borderWidth: 3,
-                borderColor: "#FFFFFF",
-                shadowColor: "#000",
-                shadowOpacity: 0.16,
-                shadowRadius: 4,
-                shadowOffset: { width: 0, height: 2 },
-                elevation: 3,
+                height: 18,
+                left: `${progress * 100}%`,
+                marginLeft: -9,
+                position: "absolute",
+                width: 18,
               }}
             />
           </View>
 
           <View
             style={{
-              marginTop: 10,
               flexDirection: "row",
               justifyContent: "space-between",
+              marginTop: 6,
             }}
           >
-            <Text style={{ color: "#6B7280", fontSize: 12 }}>
+            <Text style={{ color: theme.secondary, fontSize: 11 }}>
               {formatTime(visiblePosition)}
             </Text>
-            <Text style={{ color: "#6B7280", fontSize: 12 }}>
+            <Text style={{ color: theme.secondary, fontSize: 11 }}>
               {formatTime(duration)}
             </Text>
           </View>
         </View>
 
         {error ? (
-          <Text style={{ color: "#B91C1C", textAlign: "center", fontSize: 13 }}>
+          <Text style={{ color: "#FF6B8A", fontSize: 13, textAlign: "center" }}>
             {error}
           </Text>
         ) : null}
       </View>
 
-      <View style={{ gap: 18 }}>
+      <View style={{ gap: 20 }}>
         <View
           style={{
-            width: "100%",
-            flexDirection: "row",
             alignItems: "center",
+            flexDirection: "row",
             justifyContent: "space-between",
           }}
         >
-          <Pressable
+          <RoundButton
+            icon="shuffle"
             onPress={() => {
               void seekBy(-10);
             }}
-            style={{
-              width: 44,
-              height: 48,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="play-back" size={26} color="#111827" />
-          </Pressable>
-
-          <Pressable
+          />
+          <RoundButton
             disabled={!canGoPrevious}
+            icon="play-skip-back"
             onPress={() => {
               void playPrevious();
             }}
-            style={{
-              opacity: canGoPrevious ? 1 : 0.35,
-              width: 46,
-              height: 52,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="play-skip-back" size={30} color="#111827" />
-          </Pressable>
-
-          <Pressable
+          />
+          <RoundButton
+            prominent
+            icon={isPlaying ? "pause" : "play"}
             onPress={() => {
               void togglePlayback();
             }}
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 35,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#111827",
-            }}
-          >
-            <Ionicons
-              name={isPlaying ? "pause" : "play"}
-              size={36}
-              color="#FFFFFF"
-            />
-          </Pressable>
-
-          <Pressable
+          />
+          <RoundButton
             disabled={!canGoNext}
+            icon="play-skip-forward"
             onPress={() => {
               void playNext();
             }}
-            style={{
-              opacity: canGoNext ? 1 : 0.35,
-              width: 46,
-              height: 52,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="play-skip-forward" size={30} color="#111827" />
-          </Pressable>
-
-          <Pressable
+          />
+          <RoundButton
+            icon="repeat"
             onPress={() => {
               void seekBy(10);
             }}
-            style={{
-              width: 44,
-              height: 48,
+          />
+        </View>
+
+        <View
+          style={[
+            {
               alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="play-forward" size={26} color="#111827" />
-          </Pressable>
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+              borderRadius: 18,
+              borderWidth: 1,
+              flexDirection: "row",
+              justifyContent: "space-around",
+              paddingVertical: 13,
+            },
+            softShadow(theme.isDark, "low"),
+          ]}
+        >
+          {["list", "timer-outline", "share-social-outline", "options-outline"].map(
+            (icon) => (
+              <Ionicons
+                key={icon}
+                name={icon as IconName}
+                color={theme.secondary}
+                size={20}
+              />
+            ),
+          )}
         </View>
       </View>
     </View>

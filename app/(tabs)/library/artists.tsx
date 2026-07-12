@@ -1,30 +1,69 @@
-import React from "react";
-import { FlatList, View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { FlatList, Text, View } from "react-native";
 
+import { Artwork, softShadow, useAppTheme } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
 
-const Artists = () => {
-  const { artists } = useLibraryStore();
+const sampleArtists = [
+  { name: "Ed Sheeran", songs: 14 },
+  { name: "The Weeknd", songs: 11 },
+  { name: "Imagine Dragons", songs: 9 },
+  { name: "Billie Eilish", songs: 8 },
+];
+
+export default function Artists() {
+  const theme = useAppTheme();
+  const artists = useLibraryStore((state) => state.artists);
+  const data = artists.length
+    ? artists.map((artist, index) => ({
+        name: artist.name,
+        songs: artist.songs.length,
+        index,
+      }))
+    : sampleArtists.map((artist, index) => ({ ...artist, index }));
 
   return (
     <FlatList
-      key="artists-list"
-      data={artists}
-      keyExtractor={(_, index) => index.toString()}
+      data={data}
+      keyExtractor={(item) => item.name}
+      style={{ backgroundColor: theme.background, flex: 1 }}
+      contentContainerStyle={{
+        gap: 10,
+        paddingBottom: 154,
+        paddingHorizontal: 22,
+        paddingTop: 14,
+      }}
       renderItem={({ item }) => (
         <View
-          style={{
-            padding: 15,
-            borderBottomWidth: 1,
-            borderColor: "#ddd",
-          }}
+          style={[
+            {
+              alignItems: "center",
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+              borderRadius: 16,
+              borderWidth: 1,
+              flexDirection: "row",
+              gap: 12,
+              padding: 10,
+            },
+            softShadow(theme.isDark, "low"),
+          ]}
         >
-          <Text>{item.name}</Text>
-          <Text>{item.songs.length} Songs</Text>
+          <Artwork icon="person" size={48} index={item.index} />
+          <View style={{ flex: 1 }}>
+            <Text
+              numberOfLines={1}
+              style={{ color: theme.primary, fontSize: 14, fontWeight: "900" }}
+            >
+              {item.name}
+            </Text>
+            <Text style={{ color: theme.secondary, fontSize: 11 }}>
+              {item.songs} songs
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" color={theme.secondary} size={18} />
         </View>
       )}
     />
   );
-};
-
-export default Artists;
+}
