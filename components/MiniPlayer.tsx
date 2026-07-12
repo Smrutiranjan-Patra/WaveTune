@@ -65,9 +65,7 @@ export default function MiniPlayer() {
             Now playing
           </Text>
         </View>
-
-        <Ionicons name="options-outline" color={theme.accent} size={18} />
-
+        
         <Pressable
           onPress={(event) => {
             event.stopPropagation();

@@ -40,24 +40,6 @@ const Header = () => {
             Enjoy your music
           </Text>
         </View>
-
-        <Pressable
-          style={[
-            {
-              alignItems: "center",
-              backgroundColor: theme.card,
-              borderColor: theme.border,
-              borderRadius: 17,
-              borderWidth: 1,
-              height: 34,
-              justifyContent: "center",
-              width: 34,
-            },
-            softShadow(theme.isDark, "low"),
-          ]}
-        >
-          <Ionicons name="notifications-outline" color={accent} size={17} />
-        </Pressable>
       </View>
     </View>
   );
