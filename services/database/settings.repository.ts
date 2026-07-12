@@ -6,6 +6,7 @@ export type PersistedSettings = {
   audioFocus: boolean;
   crossfade: boolean;
   excludedFolderPaths: string[];
+  floatingControlsHidden: boolean;
   gaplessPlayback: boolean;
   sleepTimerMinutes: number | null;
   themeMode: "light" | "dark" | "auto";
@@ -63,12 +64,16 @@ export async function getPersistedSettings() {
   const database = getDatabaseSync();
   if (!database) return fallbackSettings;
 
-  const rows = database.getAllSync<SettingRow>("SELECT key, value FROM settings");
+  const rows = database.getAllSync<SettingRow>(
+    "SELECT key, value FROM settings",
+  );
   const databaseSettings: Partial<PersistedSettings> = {};
 
   for (const row of rows) {
     try {
-      (databaseSettings as Record<string, unknown>)[row.key] = JSON.parse(row.value);
+      (databaseSettings as Record<string, unknown>)[row.key] = JSON.parse(
+        row.value,
+      );
     } catch {
       // Ignore malformed values and retain the store default.
     }

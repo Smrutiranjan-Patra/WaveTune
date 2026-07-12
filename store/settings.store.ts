@@ -11,6 +11,7 @@ interface SettingsState {
   audioFocus: boolean;
   crossfade: boolean;
   excludedFolderPaths: string[];
+  floatingControlsHidden: boolean;
   gaplessPlayback: boolean;
   hydrated: boolean;
   sleepTimerMinutes: number | null;
@@ -19,6 +20,7 @@ interface SettingsState {
   hydrateSettings: () => Promise<void>;
   setAudioFocus: (enabled: boolean) => void;
   setCrossfade: (enabled: boolean) => void;
+  setFloatingControlsHidden: (hidden: boolean) => void;
   setGaplessPlayback: (enabled: boolean) => void;
   setThemeMode: (themeMode: ThemeMode) => void;
   setUserName: (userName: string) => void;
@@ -31,6 +33,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   audioFocus: true,
   crossfade: true,
   excludedFolderPaths: [],
+  floatingControlsHidden: false,
   gaplessPlayback: true,
   hydrated: false,
   sleepTimerMinutes: null,
@@ -48,6 +51,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setCrossfade: (crossfade) => {
     set({ crossfade });
     void setPersistedSetting("crossfade", crossfade);
+  },
+  setFloatingControlsHidden: (floatingControlsHidden) => {
+    set({ floatingControlsHidden });
+    void setPersistedSetting("floatingControlsHidden", floatingControlsHidden);
   },
   setGaplessPlayback: (gaplessPlayback) => {
     set({ gaplessPlayback });

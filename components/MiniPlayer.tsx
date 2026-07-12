@@ -1,6 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+  Animated,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import {
   Artwork,
@@ -10,17 +17,34 @@ import {
 } from "./DesignSystem";
 import { usePlayerStore } from "../store/player.store";
 
-export default function MiniPlayer() {
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+export default function MiniPlayer({
+  hidden = false,
+  reserveSearchSpace = false,
+}: {
+  hidden?: boolean;
+  reserveSearchSpace?: boolean;
+}) {
   const theme = useAppTheme();
+  const { width } = useWindowDimensions();
   const pathname = usePathname();
+  const translateX = useRef(new Animated.Value(hidden ? -width : 0)).current;
   const {
-    cleanupPlayer,
     currentTrack,
     duration,
     isPlaying,
     position,
     togglePlayback,
   } = usePlayerStore();
+
+  useEffect(() => {
+    Animated.timing(translateX, {
+      duration: 240,
+      toValue: hidden ? -width : 0,
+      useNativeDriver: true,
+    }).start();
+  }, [hidden, translateX, width]);
 
   if (!currentTrack || pathname === "/player") {
     return null;
@@ -29,20 +53,22 @@ export default function MiniPlayer() {
   const progress = duration > 0 ? Math.min(position / duration, 1) : 0;
 
   return (
-    <Pressable
+    <AnimatedPressable
+      pointerEvents={hidden ? "none" : "auto"}
       onPress={() => {
         router.push("/player");
       }}
       style={{
         position: "absolute",
-        left: 18,
-        right: 18,
+        left: 15,
+        right: reserveSearchSpace ? 88 : 40,
         bottom: 85,
         borderRadius: 16,
         backgroundColor: theme.card,
         borderColor: theme.border,
         borderWidth: 1,
         overflow: "hidden",
+        transform: [{ translateX }],
         ...softShadow(theme.isDark, "high"),
       }}
     >
@@ -79,23 +105,6 @@ export default function MiniPlayer() {
             Now playing
           </Text>
         </View>
-        <Pressable
-          accessibilityLabel="Stop playback and hide player"
-          accessibilityRole="button"
-          hitSlop={10}
-          onPress={(event) => {
-            event.stopPropagation();
-            void cleanupPlayer();
-          }}
-          style={{
-            alignItems: "center",
-            height: 34,
-            justifyContent: "center",
-            width: 28,
-          }}
-        >
-          <Ionicons name="close" color={theme.secondary} size={20} />
-        </Pressable>
 
         <Pressable
           accessibilityLabel={isPlaying ? "Pause" : "Play"}
@@ -121,6 +130,6 @@ export default function MiniPlayer() {
           />
         </Pressable>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
