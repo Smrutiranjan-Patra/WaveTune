@@ -70,7 +70,7 @@ export default function TabLayout() {
           name={name}
           options={{
             title: label,
-            tabBarLabel: label,
+            tabBarLabel: name === "search" ? () => null : label,
             tabBarIcon: ({ color, focused }) => {
               const resolvedIcon =
                 focused && icon.endsWith("-outline")
@@ -84,10 +84,10 @@ export default function TabLayout() {
                       alignItems: "center",
                       backgroundColor: theme.accent,
                       borderRadius: 22,
-                      height: 44,
+                      height: 50,
                       justifyContent: "center",
-                      marginTop: -18,
-                      width: 44,
+                      marginTop: 10,
+                      width: 50,
                       ...softShadow(theme.isDark, "high"),
                     }}
                   >

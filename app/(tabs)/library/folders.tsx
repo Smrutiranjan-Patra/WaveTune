@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, Text, View } from "react-native";
+import { router } from "expo-router";
+import { FlatList, Pressable, Text, View } from "react-native";
 
 import { softShadow, useAppTheme } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
@@ -30,7 +31,14 @@ export default function Folders() {
         </Text>
       }
       renderItem={({ item }) => (
-        <View
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: "/library-group/[type]",
+              params: { key: item.path, title: item.name, type: "folder" },
+            })
+          }
           style={[
             {
               alignItems: "center",
@@ -64,14 +72,17 @@ export default function Folders() {
             >
               {item.name}
             </Text>
-            <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
+            <Text
+              numberOfLines={1}
+              style={{ color: theme.secondary, fontSize: 11 }}
+            >
               {item.path}
             </Text>
           </View>
           <Text style={{ color: theme.secondary, fontSize: 11 }}>
             {item.songs}
           </Text>
-        </View>
+        </Pressable>
       )}
     />
   );

@@ -4,23 +4,20 @@
     "slug": "WaveTune",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "wavetune",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "icon": "./assets/images/splash.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.WaveTune"
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE"
-      },
       "permissions": [
         "READ_MEDIA_AUDIO"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,

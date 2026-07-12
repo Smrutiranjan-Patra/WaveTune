@@ -1,7 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import type * as MediaLibrary from "expo-media-library";
-import { FlatList, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import {
   Artwork,
@@ -64,14 +71,25 @@ function SongTile({
   );
 }
 
-function FavoriteStrip({ songs }: { songs: DisplaySong[] }) {
+function FavoriteStrip({
+  onPress,
+  songs,
+}: {
+  onPress: (song: DisplaySong) => void;
+  songs: DisplaySong[];
+}) {
   const theme = useAppTheme();
+  const { width } = useWindowDimensions();
+  const cardWidth = (width - 44 - 30) / 4;
+  const artworkSize = Math.min(52, cardWidth - 16);
 
   return (
     <View style={{ flexDirection: "row", gap: 10 }}>
       {songs.slice(0, 4).map((song, index) => (
-        <View
+        <Pressable
+          accessibilityRole="button"
           key={song.id}
+          onPress={() => onPress(song)}
           style={[
             {
               alignItems: "center",
@@ -79,13 +97,13 @@ function FavoriteStrip({ songs }: { songs: DisplaySong[] }) {
               borderColor: theme.border,
               borderRadius: 16,
               borderWidth: 1,
-              flex: 1,
               padding: 8,
+              width: cardWidth,
             },
             softShadow(theme.isDark, "low"),
           ]}
         >
-          <Artwork size={52} index={index + 5} />
+          <Artwork size={artworkSize} index={index + 5} />
           <Text
             numberOfLines={1}
             style={{
@@ -98,7 +116,7 @@ function FavoriteStrip({ songs }: { songs: DisplaySong[] }) {
           >
             {song.title}
           </Text>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -109,7 +127,7 @@ function EmptySection({ title }: { title: string }) {
 
   return (
     <View>
-      <SectionHeader title={title} />
+      <SectionHeader title={title} action="" />
       <View
         style={[
           {
@@ -175,7 +193,14 @@ function EmptyFeatureCard({
       <Text style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}>
         {title}
       </Text>
-      <Text style={{ color: theme.secondary, fontSize: 11, lineHeight: 15, marginTop: 4 }}>
+      <Text
+        style={{
+          color: theme.secondary,
+          fontSize: 11,
+          lineHeight: 15,
+          marginTop: 4,
+        }}
+      >
         {message}
       </Text>
     </View>
@@ -255,13 +280,19 @@ function FirstRunHome({
               ]}
             >
               <Ionicons name="play" color="#FFFFFF" size={15} />
-              <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}>
+              <Text
+                style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}
+              >
                 Play All
               </Text>
             </Pressable>
           ) : null}
           <Pressable
-            onPress={() => router.push(songsCount ? "/(tabs)/library/songs" : "/(tabs)/settings")}
+            onPress={() =>
+              router.push(
+                songsCount ? "/(tabs)/library/songs" : "/(tabs)/settings",
+              )
+            }
             style={[
               {
                 alignItems: "center",
@@ -283,7 +314,9 @@ function FirstRunHome({
               color={theme.accent}
               size={15}
             />
-            <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "900" }}>
+            <Text
+              style={{ color: theme.primary, fontSize: 12, fontWeight: "900" }}
+            >
               {songsCount ? "Library" : "Rescan"}
             </Text>
           </Pressable>
@@ -334,10 +367,19 @@ function FirstRunHome({
           <Ionicons name="heart-outline" color={theme.accent} size={20} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}>
+          <Text
+            style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
+          >
             Favorites are waiting
           </Text>
-          <Text style={{ color: theme.secondary, fontSize: 11, lineHeight: 16, marginTop: 3 }}>
+          <Text
+            style={{
+              color: theme.secondary,
+              fontSize: 11,
+              lineHeight: 16,
+              marginTop: 3,
+            }}
+          >
             Tap the heart on a song or player screen to save it here.
           </Text>
         </View>
@@ -355,7 +397,9 @@ export default function HomeScreen() {
   const playSong = usePlayerStore((state) => state.playSong);
   const songsById = new Map(scannedSongs.map((song) => [song.id, song]));
   const recentSongs = toDisplaySongs(
-    history.map((entry) => songsById.get(entry.songId)).filter(Boolean) as MediaLibrary.Asset[],
+    history
+      .map((entry) => songsById.get(entry.songId))
+      .filter(Boolean) as MediaLibrary.Asset[],
   );
   const mostPlayedSongs = toDisplaySongs(
     [...history]
@@ -364,7 +408,9 @@ export default function HomeScreen() {
       .filter(Boolean) as MediaLibrary.Asset[],
   );
   const favoriteSongs = toDisplaySongs(
-    favoriteSongIds.map((id) => songsById.get(id)).filter(Boolean) as MediaLibrary.Asset[],
+    favoriteSongIds
+      .map((id) => songsById.get(id))
+      .filter(Boolean) as MediaLibrary.Asset[],
   );
 
   const handlePlay = (item: DisplaySong) => {
@@ -376,7 +422,9 @@ export default function HomeScreen() {
   };
 
   const handlePlayAll = () => {
-    const firstPlayable = toDisplaySongs(scannedSongs).find((song) => song.asset);
+    const firstPlayable = toDisplaySongs(scannedSongs).find(
+      (song) => song.asset,
+    );
 
     if (firstPlayable) {
       handlePlay(firstPlayable);
@@ -409,7 +457,10 @@ export default function HomeScreen() {
         <>
           {recentSongs.length ? (
             <View>
-              <SectionHeader title="Recently Played" />
+              <SectionHeader
+                title="Recently Played"
+                onActionPress={() => router.push("/collection/recent")}
+              />
               <FlatList
                 horizontal
                 data={recentSongs.slice(0, 6)}
@@ -431,7 +482,10 @@ export default function HomeScreen() {
 
           {mostPlayedSongs.length ? (
             <View>
-              <SectionHeader title="Most Played" />
+              <SectionHeader
+                title="Most Played"
+                onActionPress={() => router.push("/collection/most-played")}
+              />
               <FlatList
                 horizontal
                 data={mostPlayedSongs.slice(0, 12)}
@@ -451,35 +505,12 @@ export default function HomeScreen() {
 
           {favoriteSongs.length ? (
             <View>
-              <SectionHeader title="Favorites" />
-              <FavoriteStrip songs={favoriteSongs} />
+              <SectionHeader
+                title="Favorites"
+                onActionPress={() => router.push("/collection/favorites")}
+              />
+              <FavoriteStrip songs={favoriteSongs} onPress={handlePlay} />
             </View>
-          ) : null}
-
-          {scannedSongs.length ? (
-            <Pressable
-              onPress={handlePlayAll}
-              style={[
-                {
-                  alignItems: "center",
-                  alignSelf: "center",
-                  backgroundColor: theme.accent,
-                  borderRadius: 24,
-                  flexDirection: "row",
-                  gap: 8,
-                  justifyContent: "center",
-                  marginTop: 2,
-                  paddingHorizontal: 22,
-                  paddingVertical: 13,
-                },
-                softShadow(theme.isDark, "high"),
-              ]}
-            >
-              <Ionicons name="play" color="#FFFFFF" size={16} />
-              <Text style={{ color: "#FFFFFF", fontSize: 13, fontWeight: "900" }}>
-                Play All
-              </Text>
-            </Pressable>
           ) : null}
         </>
       )}

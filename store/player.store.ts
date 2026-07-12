@@ -66,10 +66,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     set({
       currentTrack: null,
       currentIndex: -1,
+      duration: 0,
+      error: null,
       isLoaded: false,
       isPlaying: false,
       position: 0,
-      duration: 0,
+      queue: [],
       subscription: null,
     });
   },
@@ -144,7 +146,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       get().syncStatus(status);
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to resume track",
+        error:
+          error instanceof Error ? error.message : "Failed to resume track",
         isPlaying: false,
       });
     }

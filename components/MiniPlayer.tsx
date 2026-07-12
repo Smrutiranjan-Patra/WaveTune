@@ -2,14 +2,25 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
-import { Artwork, getTrackTitle, softShadow, useAppTheme } from "./DesignSystem";
+import {
+  Artwork,
+  getTrackTitle,
+  softShadow,
+  useAppTheme,
+} from "./DesignSystem";
 import { usePlayerStore } from "../store/player.store";
 
 export default function MiniPlayer() {
   const theme = useAppTheme();
   const pathname = usePathname();
-  const { currentTrack, duration, isPlaying, position, togglePlayback } =
-    usePlayerStore();
+  const {
+    cleanupPlayer,
+    currentTrack,
+    duration,
+    isPlaying,
+    position,
+    togglePlayback,
+  } = usePlayerStore();
 
   if (!currentTrack || pathname === "/player") {
     return null;
@@ -61,12 +72,34 @@ export default function MiniPlayer() {
           >
             {getTrackTitle(currentTrack.filename)}
           </Text>
-          <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
+          <Text
+            numberOfLines={1}
+            style={{ color: theme.secondary, fontSize: 11 }}
+          >
             Now playing
           </Text>
         </View>
-        
         <Pressable
+          accessibilityLabel="Stop playback and hide player"
+          accessibilityRole="button"
+          hitSlop={10}
+          onPress={(event) => {
+            event.stopPropagation();
+            void cleanupPlayer();
+          }}
+          style={{
+            alignItems: "center",
+            height: 34,
+            justifyContent: "center",
+            width: 28,
+          }}
+        >
+          <Ionicons name="close" color={theme.secondary} size={20} />
+        </Pressable>
+
+        <Pressable
+          accessibilityLabel={isPlaying ? "Pause" : "Play"}
+          accessibilityRole="button"
           onPress={(event) => {
             event.stopPropagation();
             void togglePlayback();

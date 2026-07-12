@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ComponentProps, ReactNode } from "react";
-import { Image, Text, useColorScheme, View } from "react-native";
+import { Image, Pressable, Text, useColorScheme, View } from "react-native";
 
 import { useSettingsStore } from "../store/settings.store";
 
@@ -22,7 +22,8 @@ export const artworkPalette = [
 export function useAppTheme() {
   const colorScheme = useColorScheme();
   const themeMode = useSettingsStore((state) => state.themeMode);
-  const resolvedMode = themeMode === "auto" ? (colorScheme ?? "light") : themeMode;
+  const resolvedMode =
+    themeMode === "auto" ? (colorScheme ?? "light") : themeMode;
   const isDark = resolvedMode === "dark";
 
   return {
@@ -42,7 +43,10 @@ export function useAppTheme() {
   };
 }
 
-export function softShadow(isDark: boolean, depth: "low" | "medium" | "high" = "medium") {
+export function softShadow(
+  isDark: boolean,
+  depth: "low" | "medium" | "high" = "medium",
+) {
   const settings = {
     low: { elevation: 3, opacity: 0.08, radius: 8, y: 3 },
     medium: { elevation: 8, opacity: 0.12, radius: 16, y: 8 },
@@ -82,9 +86,11 @@ export function formatTime(totalSeconds?: number) {
 
 export function SectionHeader({
   action = "See All",
+  onActionPress,
   title,
 }: {
   action?: string;
+  onActionPress?: () => void;
   title: string;
 }) {
   const theme = useAppTheme();
@@ -101,9 +107,21 @@ export function SectionHeader({
       <Text style={{ color: theme.primary, fontSize: 16, fontWeight: "800" }}>
         {title}
       </Text>
-      <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "800" }}>
-        {action}
-      </Text>
+      {action ? (
+        <Pressable
+          accessibilityRole={onActionPress ? "button" : undefined}
+          disabled={!onActionPress}
+          hitSlop={10}
+          onPress={onActionPress}
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+        >
+          <Text
+            style={{ color: theme.accent, fontSize: 12, fontWeight: "800" }}
+          >
+            {action}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

@@ -1,4 +1,5 @@
-import { FlatList, Text, View } from "react-native";
+import { router } from "expo-router";
+import { FlatList, Pressable, Text, useWindowDimensions } from "react-native";
 
 import {
   Artwork,
@@ -10,7 +11,10 @@ import { useLibraryStore } from "../../../store/library.store";
 
 export default function Albums() {
   const theme = useAppTheme();
+  const { width } = useWindowDimensions();
   const albums = useLibraryStore((state) => state.albums);
+  const cardWidth = (width - 44 - 14) / 2;
+  const artworkSize = Math.min(128, cardWidth - 20);
   const data = albums.map((album, index) => ({
     id: album.id,
     songs: album.songs.length,
@@ -37,20 +41,27 @@ export default function Albums() {
         </Text>
       }
       renderItem={({ item }) => (
-        <View
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: "/library-group/[type]",
+              params: { key: item.id, title: item.title, type: "album" },
+            })
+          }
           style={[
             {
               backgroundColor: theme.card,
               borderColor: theme.border,
               borderRadius: 16,
               borderWidth: 1,
-              flex: 1,
               padding: 10,
+              width: cardWidth,
             },
             softShadow(theme.isDark, "low"),
           ]}
         >
-          <Artwork size={128} index={item.index} />
+          <Artwork size={artworkSize} index={item.index} />
           <Text
             numberOfLines={1}
             style={{
@@ -65,7 +76,7 @@ export default function Albums() {
           <Text style={{ color: theme.secondary, fontSize: 11 }}>
             {item.songs} songs
           </Text>
-        </View>
+        </Pressable>
       )}
     />
   );

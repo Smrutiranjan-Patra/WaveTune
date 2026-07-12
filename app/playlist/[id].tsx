@@ -27,11 +27,25 @@ export default function PlaylistDetailsScreen() {
   const [selectedSongIds, setSelectedSongIds] = useState<string[]>(
     playlist?.songIds ?? [],
   );
+  const [searchQuery, setSearchQuery] = useState("");
 
   const selectedSongSet = useMemo(
     () => new Set(selectedSongIds),
     [selectedSongIds],
   );
+  const filteredSongs = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+
+    if (!normalizedQuery) {
+      return songs;
+    }
+
+    return songs.filter((song) =>
+      getTrackTitle(song.filename)
+        .toLocaleLowerCase()
+        .includes(normalizedQuery),
+    );
+  }, [searchQuery, songs]);
 
   const toggleSong = (songId: string) => {
     setSelectedSongIds((current) =>
@@ -122,7 +136,7 @@ export default function PlaylistDetailsScreen() {
       </View>
 
       <FlatList
-        data={songs}
+        data={filteredSongs}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={{ gap: 20, paddingBottom: 18 }}>
@@ -139,11 +153,7 @@ export default function PlaylistDetailsScreen() {
               ]}
             >
               <View style={{ flexDirection: "row", gap: 14 }}>
-                <Artwork
-                  icon="list"
-                  index={selectedSongIds.length}
-                  size={96}
-                />
+                <Artwork icon="list" index={selectedSongIds.length} size={96} />
                 <View style={{ flex: 1, justifyContent: "center" }}>
                   <Text
                     style={{
@@ -167,7 +177,13 @@ export default function PlaylistDetailsScreen() {
                     }}
                     value={name}
                   />
-                  <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 8 }}>
+                  <Text
+                    style={{
+                      color: theme.secondary,
+                      fontSize: 12,
+                      marginTop: 8,
+                    }}
+                  >
                     {selectedSongIds.length} selected songs
                   </Text>
                 </View>
@@ -181,7 +197,13 @@ export default function PlaylistDetailsScreen() {
                 justifyContent: "space-between",
               }}
             >
-              <Text style={{ color: theme.primary, fontSize: 16, fontWeight: "900" }}>
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 16,
+                  fontWeight: "900",
+                }}
+              >
                 Add Songs
               </Text>
               <Pressable
@@ -197,10 +219,63 @@ export default function PlaylistDetailsScreen() {
                 }}
               >
                 <Ionicons name="checkmark" color="#FFFFFF" size={16} />
-                <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}>
+                <Text
+                  style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}
+                >
                   Save
                 </Text>
               </Pressable>
+            </View>
+
+            <View
+              style={[
+                {
+                  alignItems: "center",
+                  backgroundColor: theme.card,
+                  borderColor: theme.border,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  flexDirection: "row",
+                  gap: 10,
+                  minHeight: 44,
+                  paddingHorizontal: 14,
+                },
+                softShadow(theme.isDark, "low"),
+              ]}
+            >
+              <Ionicons
+                name="search-outline"
+                color={theme.secondary}
+                size={18}
+              />
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                onChangeText={setSearchQuery}
+                placeholder="Search songs"
+                placeholderTextColor={theme.muted}
+                returnKeyType="search"
+                style={{
+                  color: theme.primary,
+                  flex: 1,
+                  fontSize: 13,
+                  paddingVertical: 10,
+                }}
+                value={searchQuery}
+              />
+              {searchQuery ? (
+                <Pressable
+                  accessibilityLabel="Clear song search"
+                  hitSlop={8}
+                  onPress={() => setSearchQuery("")}
+                >
+                  <Ionicons
+                    name="close-circle"
+                    color={theme.secondary}
+                    size={18}
+                  />
+                </Pressable>
+              ) : null}
             </View>
           </View>
         }
@@ -218,7 +293,11 @@ export default function PlaylistDetailsScreen() {
               softShadow(theme.isDark, "low"),
             ]}
           >
-            <Ionicons name="musical-notes-outline" color={theme.accent} size={28} />
+            <Ionicons
+              name="musical-notes-outline"
+              color={theme.accent}
+              size={28}
+            />
             <Text
               style={{
                 color: theme.primary,
@@ -227,10 +306,14 @@ export default function PlaylistDetailsScreen() {
                 marginTop: 8,
               }}
             >
-              No songs available
+              {songs.length ? "No matching songs" : "No songs available"}
             </Text>
-            <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}>
-              Rescan your library from Settings to add music.
+            <Text
+              style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}
+            >
+              {songs.length
+                ? "Try another title or clear your search."
+                : "Rescan your library from Settings to add music."}
             </Text>
           </View>
         }
@@ -264,11 +347,18 @@ export default function PlaylistDetailsScreen() {
               <View style={{ flex: 1 }}>
                 <Text
                   numberOfLines={1}
-                  style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
+                  style={{
+                    color: theme.primary,
+                    fontSize: 13,
+                    fontWeight: "900",
+                  }}
                 >
                   {getTrackTitle(item.filename)}
                 </Text>
-                <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{ color: theme.secondary, fontSize: 11 }}
+                >
                   {getTrackArtist(index)}
                 </Text>
               </View>

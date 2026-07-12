@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, Text, View } from "react-native";
+import { router } from "expo-router";
+import { FlatList, Pressable, Text, View } from "react-native";
 
 import { softShadow, useAppTheme } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
@@ -31,7 +32,14 @@ export default function Genres() {
         </Text>
       }
       renderItem={({ item, index }) => (
-        <View
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: "/library-group/[type]",
+              params: { key: item.name, title: item.name, type: "genre" },
+            })
+          }
           style={[
             {
               backgroundColor: theme.card,
@@ -71,7 +79,7 @@ export default function Genres() {
           <Text style={{ color: theme.secondary, fontSize: 11 }}>
             {item.songs} songs
           </Text>
-        </View>
+        </Pressable>
       )}
     />
   );

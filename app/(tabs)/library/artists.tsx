@@ -1,7 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, Text, View } from "react-native";
+import { router } from "expo-router";
+import { FlatList, Pressable, Text, View } from "react-native";
 
-import { Artwork, softShadow, useAppTheme } from "../../../components/DesignSystem";
+import {
+  Artwork,
+  softShadow,
+  useAppTheme,
+} from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
 
 export default function Artists() {
@@ -30,7 +35,14 @@ export default function Artists() {
         </Text>
       }
       renderItem={({ item }) => (
-        <View
+        <Pressable
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: "/library-group/[type]",
+              params: { key: item.name, title: item.name, type: "artist" },
+            })
+          }
           style={[
             {
               alignItems: "center",
@@ -58,7 +70,7 @@ export default function Artists() {
             </Text>
           </View>
           <Ionicons name="chevron-forward" color={theme.secondary} size={18} />
-        </View>
+        </Pressable>
       )}
     />
   );

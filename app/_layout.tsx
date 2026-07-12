@@ -32,6 +32,14 @@ function AppShell() {
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="playlist/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="song/[id]" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="collection/[type]"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="library-group/[type]"
+            options={{ headerShown: false }}
+          />
         </Stack>
         {shouldShowMiniPlayer ? <MiniPlayer /> : null}
       </View>
