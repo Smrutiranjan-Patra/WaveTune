@@ -42,6 +42,7 @@ export async function scanSongs() {
       mediaType: "audio",
       first: 1000,
       after,
+      sortBy: [[MediaLibrary.SortBy.creationTime, false]],
     });
 
     songs.push(...result.assets);
@@ -74,6 +75,7 @@ export async function getAvailableMusicFolders() {
       mediaType: "audio",
       first: 1000,
       after,
+      sortBy: [[MediaLibrary.SortBy.creationTime, false]],
     });
 
     result.assets.forEach((asset) => {

@@ -12,6 +12,7 @@ import {
   seekTrack,
   subscribeToPlaybackStatus,
 } from "../services/player";
+import { useUserLibraryStore } from "./user-library.store";
 import {
   findQueueIndex,
   getNextQueueIndex,
@@ -113,6 +114,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         currentIndex,
         error: null,
       });
+
+      useUserLibraryStore.getState().recordPlay(track.id);
 
       get().syncStatus(status);
     } catch (error) {

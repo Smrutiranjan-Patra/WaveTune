@@ -60,23 +60,14 @@ export function softShadow(isDark: boolean, depth: "low" | "medium" | "high" = "
 
 export function getTrackTitle(filename?: string) {
   if (!filename) {
-    return "Ocean Eyes";
+    return "Unknown Track";
   }
 
   return filename.replace(/\.[^/.]+$/, "");
 }
 
-export function getTrackArtist(index = 0) {
-  const artists = [
-    "Billie Eilish",
-    "Post Malone, Swae Lee",
-    "Ed Sheeran",
-    "Imagine Dragons",
-    "Maroon 5",
-    "The Weeknd",
-  ];
-
-  return artists[index % artists.length];
+export function getTrackArtist(_index?: number) {
+  return "Unknown Artist";
 }
 
 export function formatTime(totalSeconds?: number) {

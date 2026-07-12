@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { FlatList, Pressable, Text, View } from "react-native";
 
 import {
@@ -7,18 +8,11 @@ import {
   softShadow,
   useAppTheme,
 } from "../../components/DesignSystem";
-
-const playlists = [
-  { id: "chill-vibes", songs: 32, title: "Chill Vibes" },
-  { id: "workout", songs: 24, title: "Workout" },
-  { id: "road-trip", songs: 45, title: "Road Trip" },
-  { id: "romantic", songs: 18, title: "Romantic" },
-  { id: "focus", songs: 28, title: "Focus" },
-  { id: "party-hits", songs: 50, title: "Party Hits" },
-];
+import { useUserLibraryStore } from "../../store/user-library.store";
 
 export default function PlaylistScreen() {
   const theme = useAppTheme();
+  const playlists = useUserLibraryStore((state) => state.playlists);
 
   return (
     <FlatList
@@ -47,6 +41,7 @@ export default function PlaylistScreen() {
               Playlists
             </Text>
             <Pressable
+              onPress={() => router.push("/playlist/new")}
               style={[
                 {
                   alignItems: "center",
@@ -64,11 +59,23 @@ export default function PlaylistScreen() {
               <Ionicons name="add" color={theme.accent} size={20} />
             </Pressable>
           </View>
-          <SectionHeader title="Made for You" action="Manage" />
+          <SectionHeader title="Your Playlists" />
+        </View>
+      }
+      ListEmptyComponent={
+        <View style={{ alignItems: "center", paddingVertical: 36 }}>
+          <Ionicons name="musical-notes-outline" color={theme.accent} size={30} />
+          <Text style={{ color: theme.primary, fontSize: 14, fontWeight: "900", marginTop: 10 }}>
+            No playlists yet
+          </Text>
+          <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}>
+            Tap the plus button to build your first mix.
+          </Text>
         </View>
       }
       renderItem={({ item, index }) => (
-        <View
+        <Pressable
+          onPress={() => router.push(`/playlist/${item.id}`)}
           style={[
             {
               backgroundColor: theme.card,
@@ -91,12 +98,12 @@ export default function PlaylistScreen() {
               marginTop: 10,
             }}
           >
-            {item.title}
+            {item.name}
           </Text>
           <Text style={{ color: theme.secondary, fontSize: 11 }}>
-            {item.songs} songs
+            {item.songIds.length} songs
           </Text>
-        </View>
+        </Pressable>
       )}
     />
   );

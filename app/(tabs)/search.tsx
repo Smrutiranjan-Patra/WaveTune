@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { FlatList, ScrollView, Text, TextInput, View } from "react-native";
 
 import {
   Artwork,
@@ -12,24 +12,13 @@ import {
 } from "../../components/DesignSystem";
 import { useLibraryStore } from "../../store/library.store";
 
-const recentSearches = ["Sunflower", "Ed Sheeran", "Memories", "The Weeknd"];
-const genres = ["Pop", "Hip Hop", "Rock", "Lo-Fi", "Electronic"];
-
 export default function SearchScreen() {
   const theme = useAppTheme();
   const [query, setQuery] = useState("");
+  const genres = useLibraryStore((state) => state.genres);
   const songs = useLibraryStore((state) => state.songs);
 
   const results = useMemo(() => {
-    if (!songs.length) {
-      return [
-        { artist: "Post Malone, Swae Lee", id: "sunflower", title: "Sunflower" },
-        { artist: "Ed Sheeran", id: "shape-of-you", title: "Shape of You" },
-        { artist: "The Weeknd", id: "blinding-lights", title: "Blinding Lights" },
-        { artist: "Imagine Dragons", id: "believer", title: "Believer" },
-      ];
-    }
-
     const normalizedQuery = query.trim().toLowerCase();
 
     return songs
@@ -45,6 +34,9 @@ export default function SearchScreen() {
         title: getTrackTitle(song.filename),
       }));
   }, [query, songs]);
+
+  const recentSearches = songs.slice(0, 4).map((song) => getTrackTitle(song.filename));
+  const visibleGenres = genres.filter((genre) => genre.songs.length > 0);
 
   return (
     <ScrollView
@@ -88,96 +80,129 @@ export default function SearchScreen() {
         <Ionicons name="mic" color={theme.accent} size={18} />
       </View>
 
-      <View>
-        <SectionHeader title="Recent Searches" />
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {recentSearches.map((item) => (
-            <Pressable
-              key={item}
-              onPress={() => setQuery(item)}
-              style={{
-                backgroundColor: theme.cardSoft,
-                borderColor: theme.border,
-                borderRadius: 16,
-                borderWidth: 1,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-              }}
-            >
-              <Text style={{ color: theme.primary, fontSize: 11, fontWeight: "800" }}>
-                {item}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View>
-        <SectionHeader title="Popular Genres" />
-        <FlatList
-          horizontal
-          data={genres}
-          keyExtractor={(item) => item}
-          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item, index }) => (
-            <View
-              style={{
-                alignItems: "center",
-                backgroundColor: index % 2 ? "#2CC55E" : theme.accent,
-                borderRadius: 16,
-                gap: 6,
-                height: 76,
-                justifyContent: "center",
-                paddingHorizontal: 16,
-                width: 92,
-              }}
-            >
-              <Ionicons name="musical-notes" color="#FFFFFF" size={18} />
-              <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}>
-                {item}
-              </Text>
-            </View>
-          )}
-        />
-      </View>
-
-      <View>
-        <SectionHeader title="Top Results" />
-        <View style={{ gap: 10 }}>
-          {results.map((item, index) => (
-            <View
-              key={item.id}
-              style={[
-                {
-                  alignItems: "center",
-                  backgroundColor: theme.card,
+      {recentSearches.length ? (
+        <View>
+          <SectionHeader title="Recent Searches" />
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {recentSearches.map((item) => (
+              <Text
+                key={item}
+                onPress={() => setQuery(item)}
+                style={{
+                  backgroundColor: theme.cardSoft,
                   borderColor: theme.border,
                   borderRadius: 16,
                   borderWidth: 1,
-                  flexDirection: "row",
-                  gap: 12,
-                  padding: 10,
-                },
-                softShadow(theme.isDark, "low"),
-              ]}
-            >
-              <Artwork size={44} index={index} />
-              <View style={{ flex: 1 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
-                >
-                  {item.title}
-                </Text>
-                <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
-                  {item.artist}
+                  color: theme.primary,
+                  fontSize: 11,
+                  fontWeight: "800",
+                  overflow: "hidden",
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                }}
+              >
+                {item}
+              </Text>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {visibleGenres.length ? (
+        <View>
+          <SectionHeader title="Popular Genres" />
+          <FlatList
+            horizontal
+            data={visibleGenres}
+            keyExtractor={(item) => item.name}
+            ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item, index }) => (
+              <View
+                style={{
+                  alignItems: "center",
+                  backgroundColor: index % 2 ? "#2CC55E" : theme.accent,
+                  borderRadius: 16,
+                  gap: 6,
+                  height: 76,
+                  justifyContent: "center",
+                  paddingHorizontal: 16,
+                  width: 92,
+                }}
+              >
+                <Ionicons name="musical-notes" color="#FFFFFF" size={18} />
+                <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}>
+                  {item.name}
                 </Text>
               </View>
-              <Ionicons name="ellipsis-vertical" color={theme.secondary} size={17} />
-            </View>
-          ))}
+            )}
+          />
         </View>
+      ) : null}
+
+      <View>
+        <SectionHeader title="Top Results" />
+        {results.length ? (
+          <View style={{ gap: 10 }}>
+            {results.map((item, index) => (
+              <View
+                key={item.id}
+                style={[
+                  {
+                    alignItems: "center",
+                    backgroundColor: theme.card,
+                    borderColor: theme.border,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    flexDirection: "row",
+                    gap: 12,
+                    padding: 10,
+                  },
+                  softShadow(theme.isDark, "low"),
+                ]}
+              >
+                <Artwork size={44} index={index} />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    numberOfLines={1}
+                    style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
+                  >
+                    {item.title}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{ color: theme.secondary, fontSize: 11 }}
+                  >
+                    {item.artist}
+                  </Text>
+                </View>
+                <Ionicons name="ellipsis-vertical" color={theme.secondary} size={17} />
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View
+            style={[
+              {
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+                borderRadius: 16,
+                borderWidth: 1,
+                padding: 16,
+              },
+              softShadow(theme.isDark, "low"),
+            ]}
+          >
+            <Text style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}>
+              {songs.length ? "No matching songs" : "No songs found"}
+            </Text>
+            <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}>
+              {songs.length
+                ? "Try another search term."
+                : "Your scanned music library will appear here."}
+            </Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );

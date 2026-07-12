@@ -4,20 +4,13 @@ import { FlatList, Text, View } from "react-native";
 import { softShadow, useAppTheme } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
 
-const sampleGenres = [
-  { name: "Pop", songs: 36 },
-  { name: "Hip Hop", songs: 28 },
-  { name: "Rock", songs: 22 },
-  { name: "Lo-Fi", songs: 18 },
-  { name: "Electronic", songs: 16 },
-];
-
 export default function Genres() {
   const theme = useAppTheme();
   const genres = useLibraryStore((state) => state.genres);
-  const data = genres.length
-    ? genres.map((genre) => ({ name: genre.name, songs: genre.songs.length }))
-    : sampleGenres;
+  const data = genres.map((genre) => ({
+    name: genre.name,
+    songs: genre.songs.length,
+  }));
 
   return (
     <FlatList
@@ -32,6 +25,11 @@ export default function Genres() {
         paddingTop: 14,
       }}
       columnWrapperStyle={{ gap: 12 }}
+      ListEmptyComponent={
+        <Text style={{ color: theme.secondary, fontSize: 13 }}>
+          Genres from your music library will appear here.
+        </Text>
+      }
       renderItem={({ item, index }) => (
         <View
           style={[

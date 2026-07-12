@@ -26,7 +26,7 @@ export default function MiniPlayer() {
         position: "absolute",
         left: 18,
         right: 18,
-        bottom: 76,
+        bottom: 85,
         borderRadius: 16,
         backgroundColor: theme.card,
         borderColor: theme.border,

@@ -8,30 +8,41 @@ import MiniPlayer from "../components/MiniPlayer";
 import "../global.css";
 import AppProvider from "../providers/AppProvider";
 
-export default function RootLayout() {
+function AppShell() {
   const theme = useAppTheme();
   const pathname = usePathname();
   const isPlayerScreen = pathname === "/player";
+  const isOnboardingScreen = pathname === "/onboarding";
   const shouldShowHeader = pathname === "/" || pathname === "/home";
+  const shouldShowMiniPlayer = !isPlayerScreen && !isOnboardingScreen;
 
   return (
     <SafeAreaView
       style={{ backgroundColor: theme.background, flex: 1 }}
       edges={["top", "left", "right"]}
     >
-      <AppProvider>
-        {!isPlayerScreen && shouldShowHeader ? <Header /> : null}
-        <View style={{ flex: 1 }}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="player"
-              options={{ headerShown: false, presentation: "modal" }}
-            />
-          </Stack>
-          <MiniPlayer />
-        </View>
-      </AppProvider>
+      {!isPlayerScreen && shouldShowHeader ? <Header /> : null}
+      <View style={{ flex: 1 }}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="player"
+            options={{ headerShown: false, presentation: "modal" }}
+          />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="playlist/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="song/[id]" options={{ headerShown: false }} />
+        </Stack>
+        {shouldShowMiniPlayer ? <MiniPlayer /> : null}
+      </View>
     </SafeAreaView>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AppProvider>
+      <AppShell />
+    </AppProvider>
   );
 }

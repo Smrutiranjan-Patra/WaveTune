@@ -7,6 +7,7 @@
     "scheme": "wavetune",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/images/splash.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.WaveTune"
@@ -18,6 +19,10 @@
       "permissions": [
         "READ_MEDIA_AUDIO"
       ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/splash.png",
+        "backgroundColor": "#FFFFFF"
+      },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.WaveTune"
@@ -41,7 +46,8 @@
         }
       ],
       "expo-audio",
-      "expo-asset"
+      "expo-asset",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

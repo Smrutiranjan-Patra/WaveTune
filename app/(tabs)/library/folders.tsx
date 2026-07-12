@@ -4,22 +4,14 @@ import { FlatList, Text, View } from "react-native";
 import { softShadow, useAppTheme } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
 
-const sampleFolders = [
-  { name: "Downloads", path: "/storage/emulated/0/Download", songs: 18 },
-  { name: "Music", path: "/storage/emulated/0/Music", songs: 42 },
-  { name: "Recordings", path: "/storage/emulated/0/Recordings", songs: 6 },
-];
-
 export default function Folders() {
   const theme = useAppTheme();
   const folders = useLibraryStore((state) => state.folders);
-  const data = folders.length
-    ? folders.map((folder) => ({
-        name: folder.name,
-        path: folder.path,
-        songs: folder.songs.length,
-      }))
-    : sampleFolders;
+  const data = folders.map((folder) => ({
+    name: folder.name,
+    path: folder.path,
+    songs: folder.songs.length,
+  }));
 
   return (
     <FlatList
@@ -32,6 +24,11 @@ export default function Folders() {
         paddingHorizontal: 22,
         paddingTop: 14,
       }}
+      ListEmptyComponent={
+        <Text style={{ color: theme.secondary, fontSize: 13 }}>
+          Music folders from your scanned songs will appear here.
+        </Text>
+      }
       renderItem={({ item }) => (
         <View
           style={[

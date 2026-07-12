@@ -13,6 +13,7 @@ import {
   useAppTheme,
 } from "../components/DesignSystem";
 import { usePlayerStore } from "../store/player.store";
+import { useUserLibraryStore } from "../store/user-library.store";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 
@@ -73,6 +74,8 @@ export default function PlayerScreen() {
     seekTo,
     togglePlayback,
   } = usePlayerStore();
+  const favoriteSongIds = useUserLibraryStore((state) => state.favoriteSongIds);
+  const toggleFavorite = useUserLibraryStore((state) => state.toggleFavorite);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubPosition, setScrubPosition] = useState(0);
   const progressBarWidth = useRef(0);
@@ -181,7 +184,10 @@ export default function PlayerScreen() {
             Chill Vibes
           </Text>
         </View>
-        <RoundButton icon="heart-outline" onPress={() => {}} />
+        <RoundButton
+          icon={favoriteSongIds.includes(currentTrack.id) ? "heart" : "heart-outline"}
+          onPress={() => toggleFavorite(currentTrack.id)}
+        />
       </View>
 
       <View

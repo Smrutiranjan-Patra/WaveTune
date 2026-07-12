@@ -8,24 +8,15 @@ import {
 } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
 
-const sampleAlbums = [
-  { id: "chill-vibes", songs: 32, title: "Chill Vibes" },
-  { id: "workout", songs: 24, title: "Workout" },
-  { id: "road-trip", songs: 45, title: "Road Trip" },
-  { id: "romantic", songs: 18, title: "Romantic" },
-];
-
 export default function Albums() {
   const theme = useAppTheme();
   const albums = useLibraryStore((state) => state.albums);
-  const data = albums.length
-    ? albums.map((album, index) => ({
-        id: album.id,
-        songs: album.songs.length,
-        title: getTrackTitle(album.songs[0]?.filename ?? album.id),
-        index,
-      }))
-    : sampleAlbums.map((album, index) => ({ ...album, index }));
+  const data = albums.map((album, index) => ({
+    id: album.id,
+    songs: album.songs.length,
+    title: getTrackTitle(album.songs[0]?.filename ?? album.id),
+    index,
+  }));
 
   return (
     <FlatList
@@ -40,6 +31,11 @@ export default function Albums() {
         paddingTop: 14,
       }}
       columnWrapperStyle={{ gap: 14 }}
+      ListEmptyComponent={
+        <Text style={{ color: theme.secondary, fontSize: 13 }}>
+          Albums from your music library will appear here.
+        </Text>
+      }
       renderItem={({ item }) => (
         <View
           style={[

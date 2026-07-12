@@ -1,10 +1,11 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { accent, softShadow, useAppTheme } from "./DesignSystem";
+import { useAppTheme } from "./DesignSystem";
+import { useSettingsStore } from "../store/settings.store";
 
 const Header = () => {
   const theme = useAppTheme();
+  const userName = useSettingsStore((state) => state.userName);
   const hour = new Date().getHours();
 
   const greeting =
@@ -34,7 +35,7 @@ const Header = () => {
       >
         <View>
           <Text style={{ color: theme.primary, fontSize: 22, fontWeight: "900" }}>
-            {greeting}
+            {userName ? `${greeting}, ${userName}` : greeting}
           </Text>
           <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 2 }}>
             Enjoy your music

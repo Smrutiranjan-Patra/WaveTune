@@ -4,23 +4,14 @@ import { FlatList, Text, View } from "react-native";
 import { Artwork, softShadow, useAppTheme } from "../../../components/DesignSystem";
 import { useLibraryStore } from "../../../store/library.store";
 
-const sampleArtists = [
-  { name: "Ed Sheeran", songs: 14 },
-  { name: "The Weeknd", songs: 11 },
-  { name: "Imagine Dragons", songs: 9 },
-  { name: "Billie Eilish", songs: 8 },
-];
-
 export default function Artists() {
   const theme = useAppTheme();
   const artists = useLibraryStore((state) => state.artists);
-  const data = artists.length
-    ? artists.map((artist, index) => ({
-        name: artist.name,
-        songs: artist.songs.length,
-        index,
-      }))
-    : sampleArtists.map((artist, index) => ({ ...artist, index }));
+  const data = artists.map((artist, index) => ({
+    name: artist.name,
+    songs: artist.songs.length,
+    index,
+  }));
 
   return (
     <FlatList
@@ -33,6 +24,11 @@ export default function Artists() {
         paddingHorizontal: 22,
         paddingTop: 14,
       }}
+      ListEmptyComponent={
+        <Text style={{ color: theme.secondary, fontSize: 13 }}>
+          Artists from your music library will appear here.
+        </Text>
+      }
       renderItem={({ item }) => (
         <View
           style={[

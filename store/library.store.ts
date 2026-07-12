@@ -29,6 +29,8 @@ export type LibraryFolder = {
 interface LibraryState {
   loading: boolean;
   initialized: boolean;
+  error: string | null;
+  lastScanCount: number;
 
   songs: MediaLibrary.Asset[];
   albums: LibraryAlbum[];
@@ -42,6 +44,8 @@ interface LibraryState {
 export const useLibraryStore = create<LibraryState>((set, get) => ({
   loading: true,
   initialized: false,
+  error: null,
+  lastScanCount: 0,
 
   songs: [],
   albums: [],

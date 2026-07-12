@@ -7,14 +7,11 @@ import {
   ScrollView,
   Switch,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
-import {
-  SoftSurface,
-  softShadow,
-  useAppTheme,
-} from "../../components/DesignSystem";
+import { SoftSurface, useAppTheme } from "../../components/DesignSystem";
 import { getAvailableMusicFolders } from "../../services/library/scanner.service";
 import { useLibraryStore } from "../../store/library.store";
 import { ThemeMode, useSettingsStore } from "../../store/settings.store";
@@ -90,6 +87,7 @@ export default function SettingScreen() {
   const [applying, setApplying] = useState(false);
   const [isFolderConfigOpen, setIsFolderConfigOpen] = useState(false);
 
+  const userName = useSettingsStore((state) => state.userName);
   const excludedFolderPaths = useSettingsStore((state) => state.excludedFolderPaths);
   const sleepTimerMinutes = useSettingsStore((state) => state.sleepTimerMinutes);
   const themeMode = useSettingsStore((state) => state.themeMode);
@@ -100,6 +98,7 @@ export default function SettingScreen() {
     (state) => state.setSleepTimerMinutes,
   );
   const setThemeMode = useSettingsStore((state) => state.setThemeMode);
+  const setUserName = useSettingsStore((state) => state.setUserName);
   const toggleFolderSelection = useSettingsStore(
     (state) => state.toggleFolderSelection,
   );
@@ -138,7 +137,7 @@ export default function SettingScreen() {
       style={{ backgroundColor: theme.background, flex: 1 }}
       contentContainerStyle={{
         gap: 18,
-        paddingBottom: 154,
+        paddingBottom: 110,
         paddingHorizontal: 22,
         paddingTop: 10,
       }}
@@ -146,6 +145,25 @@ export default function SettingScreen() {
       <Text style={{ color: theme.primary, fontSize: 24, fontWeight: "900" }}>
         Settings
       </Text>
+
+      <Section title="Profile">
+        <Row icon="person-outline" title="Display Name">
+          <TextInput
+            onChangeText={setUserName}
+            placeholder="Your name"
+            placeholderTextColor={theme.muted}
+            style={{
+              color: theme.primary,
+              flex: 1,
+              fontSize: 13,
+              fontWeight: "800",
+              paddingVertical: 8,
+              textAlign: "right",
+            }}
+            value={userName ?? ""}
+          />
+        </Row>
+      </Section>
 
       <Section title="Appearance">
         {(["light", "dark", "auto"] as ThemeMode[]).map((option) => {
@@ -179,27 +197,32 @@ export default function SettingScreen() {
         })}
       </Section>
 
-      <Section title="Playback">
+      {/* <Section title="Playback">
         <Row icon="git-compare-outline" title="Crossfade">
           <Switch
-            value
+            value={crossfade}
+            onValueChange={setCrossfade}
             thumbColor="#FFFFFF"
             trackColor={{ false: theme.track, true: theme.accent }}
           />
         </Row>
         <Row icon="play-forward-circle-outline" title="Gapless Playback">
           <Switch
-            value
+            value={gaplessPlayback}
+            onValueChange={setGaplessPlayback}
             thumbColor="#FFFFFF"
             trackColor={{ false: theme.track, true: theme.accent }}
           />
         </Row>
         <Row icon="volume-medium-outline" title="Audio Focus">
-          <Text style={{ color: theme.secondary, fontSize: 12, fontWeight: "800" }}>
-            On
-          </Text>
+          <Switch
+            value={audioFocus}
+            onValueChange={setAudioFocus}
+            thumbColor="#FFFFFF"
+            trackColor={{ false: theme.track, true: theme.accent }}
+          />
         </Row>
-      </Section>
+      </Section> */}
 
       <Section title="Library">
         <Pressable onPress={handleApply} disabled={busy}>
@@ -324,34 +347,6 @@ export default function SettingScreen() {
           <Ionicons name="chevron-forward" color={theme.secondary} size={17} />
         </Row>
       </Section>
-
-      <Pressable
-        onPress={handleApply}
-        disabled={busy}
-        style={[
-          {
-            alignItems: "center",
-            backgroundColor: busy ? theme.track : theme.accent,
-            borderRadius: 24,
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "center",
-            paddingVertical: 14,
-          },
-          softShadow(theme.isDark, "high"),
-        ]}
-      >
-        {busy ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <>
-            <Ionicons name="refresh" color="#FFFFFF" size={16} />
-            <Text style={{ color: "#FFFFFF", fontSize: 13, fontWeight: "900" }}>
-              Rescan Library
-            </Text>
-          </>
-        )}
-      </Pressable>
     </ScrollView>
   );
 }

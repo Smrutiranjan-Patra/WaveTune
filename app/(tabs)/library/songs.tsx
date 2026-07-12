@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import type * as MediaLibrary from "expo-media-library";
 import { FlatList, Pressable, Text, View } from "react-native";
 
@@ -13,34 +14,76 @@ import {
 import { useLibraryStore } from "../../../store/library.store";
 import { usePlayerStore } from "../../../store/player.store";
 
-const fallbackSongs = [
-  "Sunflower",
-  "Shape of You",
-  "Someone You Loved",
-  "Believer",
-  "Memories",
-  "Blinding Lights",
-];
-
-function EmptyLibrary() {
+function EmptyLibrary({
+  error,
+  lastScanCount,
+  loading,
+  onRescan,
+}: {
+  error: string | null;
+  lastScanCount: number;
+  loading: boolean;
+  onRescan: () => void;
+}) {
   const theme = useAppTheme();
+  const title = loading
+    ? "Scanning your songs..."
+    : error
+      ? "Library scan failed"
+      : "No songs found";
+  const message = loading
+    ? "Your device music library is loading."
+    : error
+      ? error
+      : lastScanCount === 0
+        ? "WaveTune scanned your audio library but did not find any songs."
+        : "Add audio files to your device or rescan from Settings.";
 
   return (
-    <View style={{ gap: 10, paddingTop: 6 }}>
-      {fallbackSongs.map((title, index) => (
-        <SongRow
-          index={index}
-          key={title}
-          title={title}
-          artist={getTrackArtist(index + 1)}
-          duration={198 + index * 7}
-          isCurrentTrack={false}
-          isPlaying={false}
-        />
-      ))}
-      <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 6 }}>
-        Scan your device library to replace these design samples with your songs.
+    <View
+      style={[
+        {
+          alignItems: "center",
+          backgroundColor: theme.card,
+          borderColor: theme.border,
+          borderRadius: 16,
+          borderWidth: 1,
+          gap: 8,
+          padding: 18,
+        },
+        softShadow(theme.isDark, "low"),
+      ]}
+    >
+      <Ionicons name="musical-notes-outline" color={theme.accent} size={26} />
+      <Text
+        style={{
+          color: theme.primary,
+          fontSize: 14,
+          fontWeight: "900",
+          textAlign: "center",
+        }}
+      >
+        {title}
       </Text>
+      <Text style={{ color: theme.secondary, fontSize: 12, textAlign: "center" }}>
+        {message}
+      </Text>
+      {!loading ? (
+        <Pressable
+          onPress={onRescan}
+          style={{
+            backgroundColor: theme.accent,
+            borderRadius: 18,
+            marginTop: 4,
+            paddingHorizontal: 16,
+            paddingVertical: 9,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "900" }}>
+            Rescan Library
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -51,6 +94,7 @@ function SongRow({
   index,
   isCurrentTrack,
   isPlaying,
+  onDetailPress,
   onPress,
   title,
 }: {
@@ -59,14 +103,14 @@ function SongRow({
   index: number;
   isCurrentTrack: boolean;
   isPlaying: boolean;
+  onDetailPress?: () => void;
   onPress?: () => void;
   title: string;
 }) {
   const theme = useAppTheme();
 
   return (
-    <Pressable
-      onPress={onPress}
+    <View
       style={[
         {
           alignItems: "center",
@@ -75,40 +119,61 @@ function SongRow({
           borderRadius: 14,
           borderWidth: 1,
           flexDirection: "row",
-          gap: 12,
           padding: 10,
         },
         softShadow(theme.isDark, "low"),
       ]}
     >
-      <Artwork size={46} index={index} />
-      <View style={{ flex: 1 }}>
-        <Text
-          numberOfLines={1}
-          style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
-        >
-          {title}
+      <Pressable
+        onPress={onPress}
+        style={{
+          alignItems: "center",
+          flex: 1,
+          flexDirection: "row",
+          gap: 12,
+        }}
+      >
+        <Artwork size={46} index={index} />
+        <View style={{ flex: 1 }}>
+          <Text
+            numberOfLines={1}
+            style={{ color: theme.primary, fontSize: 13, fontWeight: "900" }}
+          >
+            {title}
+          </Text>
+          <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
+            {artist}
+          </Text>
+        </View>
+        <Text style={{ color: theme.secondary, fontSize: 11 }}>
+          {formatTime(duration ?? 190)}
         </Text>
-        <Text numberOfLines={1} style={{ color: theme.secondary, fontSize: 11 }}>
-          {artist}
-        </Text>
-      </View>
-      <Text style={{ color: theme.secondary, fontSize: 11 }}>
-        {formatTime(duration ?? 190)}
-      </Text>
-      <Ionicons
-        name={isCurrentTrack && isPlaying ? "pause" : "ellipsis-vertical"}
-        color={isCurrentTrack ? theme.accent : theme.secondary}
-        size={18}
-      />
-    </Pressable>
+      </Pressable>
+      <Pressable
+        onPress={onDetailPress}
+        hitSlop={10}
+        style={{
+          alignItems: "center",
+          height: 32,
+          justifyContent: "center",
+          width: 32,
+        }}
+      >
+        <Ionicons
+          name={isCurrentTrack && isPlaying ? "pause" : "ellipsis-vertical"}
+          color={isCurrentTrack ? theme.accent : theme.secondary}
+          size={18}
+        />
+      </Pressable>
+    </View>
   );
 }
 
 export default function Songs() {
   const theme = useAppTheme();
-  const { songs } = useLibraryStore();
-  const { currentTrack, error, isPlaying, pause, playSong, resume } =
+  const { error: libraryError, lastScanCount, loadLibraryData, loading, songs } =
+    useLibraryStore();
+  const { currentTrack, error: playerError, isPlaying, pause, playSong, resume } =
     usePlayerStore();
 
   const handlePress = async (item: MediaLibrary.Asset, isCurrentTrack: boolean) => {
@@ -138,7 +203,7 @@ export default function Songs() {
       }}
       ListHeaderComponent={
         <View style={{ gap: 12, paddingBottom: 4 }}>
-          {error ? (
+          {playerError ? (
             <View
               style={{
                 backgroundColor: theme.isDark ? "#3A1820" : "#FFF1F2",
@@ -149,11 +214,20 @@ export default function Songs() {
               }}
             >
               <Text style={{ color: theme.isDark ? "#FDA4AF" : "#9F1239" }}>
-                {error}
+                {playerError}
               </Text>
             </View>
           ) : null}
-          {!songs.length ? <EmptyLibrary /> : null}
+          {!songs.length ? (
+            <EmptyLibrary
+              error={libraryError}
+              lastScanCount={lastScanCount}
+              loading={loading}
+              onRescan={() => {
+                void loadLibraryData();
+              }}
+            />
+          ) : null}
         </View>
       }
       renderItem={({ item, index }) => {
@@ -169,6 +243,7 @@ export default function Songs() {
             onPress={() => {
               void handlePress(item, isCurrentTrack);
             }}
+            onDetailPress={() => router.push(`/song/${item.id}`)}
             title={getTrackTitle(item.filename)}
           />
         );

@@ -31,47 +31,47 @@ export default function LibraryLayout() {
       >
         Library
       </Text>
-    <TopTabs
-      id={"library-tabs"}
-      screenOptions={{
-        tabBarScrollEnabled: true,
-        tabBarShowIcon: false,
-        tabBarStyle: {
-          backgroundColor: theme.background,
-          elevation: 0,
-          paddingHorizontal: 14,
-          shadowOpacity: 0,
-        },
-        tabBarIndicatorStyle: {
-          backgroundColor: theme.accent,
-          borderRadius: 8,
-          height: 28,
-        },
-        tabBarItemStyle: {
-          minHeight: 36,
-          paddingHorizontal: 0,
-          width: "auto",
-        },
-        tabBarLabelStyle: {
-          textTransform: "none",
-          fontSize: 12,
-          fontWeight: "800",
-          marginHorizontal: 10,
-        },
-        tabBarActiveTintColor: "#FFFFFF",
-        tabBarInactiveTintColor: theme.secondary,
-      }}
-    >
-      {libraryTabs.map((tab) => (
-        <TopTabs.Screen
-          key={tab.name}
-          name={tab.name}
-          options={{
-            title: tab.label,
-          }}
-        />
-      ))}
-    </TopTabs>
+      <TopTabs
+        id={"library-tabs"}
+        screenOptions={{
+          tabBarScrollEnabled: true,
+          tabBarShowIcon: false,
+          tabBarStyle: {
+            backgroundColor: theme.background,
+            elevation: 0,
+            paddingHorizontal: 14,
+            shadowOpacity: 0,
+          },
+          tabBarIndicatorStyle: {
+            backgroundColor: theme.accent,
+            borderRadius: 8,
+            height: 28,
+          },
+          tabBarItemStyle: {
+            minHeight: 36,
+            paddingHorizontal: 0,
+            width: "auto",
+          },
+          tabBarLabelStyle: {
+            textTransform: "none",
+            fontSize: 12,
+            fontWeight: "800",
+            marginHorizontal: 10,
+          },
+          tabBarActiveTintColor: "#FFFFFF",
+          tabBarInactiveTintColor: theme.secondary,
+        }}
+      >
+        {libraryTabs.map((tab) => (
+          <TopTabs.Screen
+            key={tab.name}
+            name={tab.name}
+            options={{
+              title: tab.label,
+            }}
+          />
+        ))}
+      </TopTabs>
     </View>
   );
 }
