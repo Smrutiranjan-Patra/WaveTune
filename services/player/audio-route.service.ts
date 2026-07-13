@@ -1,4 +1,8 @@
-import { NativeModules, Platform } from "react-native";
+import {
+  requireOptionalNativeModule,
+  type EventSubscription,
+} from "expo-modules-core";
+import { Platform } from "react-native";
 
 export type AudioOutputRoute = {
   description?: string | null;
@@ -9,13 +13,17 @@ export type AudioOutputRoute = {
 };
 
 type AudioRouteNativeModule = {
+  addListener: (
+    eventName: "audioRoutesChanged",
+    listener: (event: { routes: AudioOutputRoute[] }) => void,
+  ) => EventSubscription;
   getAudioRoutes: () => Promise<AudioOutputRoute[]>;
   selectAudioRoute: (routeId: string) => Promise<boolean>;
 };
 
-const audioRouteModule = NativeModules.WaveTuneAudioRoute as
+const audioRouteModule = requireOptionalNativeModule("WaveTuneAudioRoute") as
   | AudioRouteNativeModule
-  | undefined;
+  | null;
 
 function requireAudioRouteModule() {
   if (Platform.OS !== "android") {
@@ -37,4 +45,15 @@ export function getAudioOutputRoutes() {
 
 export function selectAudioOutputRoute(routeId: string) {
   return requireAudioRouteModule().selectAudioRoute(routeId);
+}
+
+export function subscribeToAudioOutputRoutes(
+  listener: (routes: AudioOutputRoute[]) => void,
+): EventSubscription | null {
+  if (Platform.OS !== "android" || !audioRouteModule) return null;
+
+  return audioRouteModule.addListener(
+    "audioRoutesChanged",
+    ({ routes }) => listener(routes),
+  );
 }

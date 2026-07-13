@@ -1,11 +1,13 @@
 // providers/AppProvider.tsx
 
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { AppState, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as MediaLibrary from "expo-media-library";
 
 import { softShadow, useAppTheme } from "../components/DesignSystem";
 import { useLibraryStore } from "../store/library.store";
+import { subscribeToAudioLibraryChanges } from "../services/library/library-events.service";
 import { usePlayerStore } from "../store/player.store";
 import { useSettingsStore } from "../store/settings.store";
 import { useUserLibraryStore } from "../store/user-library.store";
@@ -393,6 +395,39 @@ export default function AppProvider({
       void cleanupPlayer();
     };
   }, [cleanupPlayer, initializePlayer, loadLibraryData]);
+
+  useEffect(() => {
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleLibraryRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        void loadLibraryData();
+      }, 1200);
+    };
+
+    const mediaLibrarySubscription = MediaLibrary.addListener(
+      scheduleLibraryRefresh,
+    );
+    const audioLibrarySubscription = subscribeToAudioLibraryChanges(
+      scheduleLibraryRefresh,
+    );
+    const appStateSubscription = AppState.addEventListener(
+      "change",
+      (nextState) => {
+        if (nextState === "active") scheduleLibraryRefresh();
+      },
+    );
+
+    return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      mediaLibrarySubscription.remove();
+      audioLibrarySubscription?.remove();
+      appStateSubscription.remove();
+    };
+  }, [loadLibraryData]);
 
   if (!initialized || error) {
     return (

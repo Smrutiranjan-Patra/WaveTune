@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
+  AppState,
   BackHandler,
   PanResponder,
   Pressable,
@@ -32,6 +33,7 @@ import {
   type AudioOutputRoute,
   getAudioOutputRoutes,
   selectAudioOutputRoute,
+  subscribeToAudioOutputRoutes,
 } from "../services/player/audio-route.service";
 import { usePlayerStore } from "../store/player.store";
 import {
@@ -613,8 +615,8 @@ export default function PlayerScreen() {
     setActiveSheet(null);
   };
 
-  const loadAudioRoutes = useCallback(async () => {
-    setLoadingAudioRoutes(true);
+  const loadAudioRoutes = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoadingAudioRoutes(true);
     setAudioRouteError(null);
 
     try {
@@ -626,9 +628,30 @@ export default function PlayerScreen() {
           : "Unable to load audio outputs.",
       );
     } finally {
-      setLoadingAudioRoutes(false);
+      if (showLoading) setLoadingAudioRoutes(false);
     }
   }, []);
+
+  useEffect(() => {
+    void loadAudioRoutes();
+
+    const routeSubscription = subscribeToAudioOutputRoutes(setAudioRoutes);
+    const appStateSubscription = AppState.addEventListener(
+      "change",
+      (nextState) => {
+        if (nextState === "active") void loadAudioRoutes();
+      },
+    );
+    const refreshInterval = setInterval(() => {
+      if (AppState.currentState === "active") void loadAudioRoutes();
+    }, 5000);
+
+    return () => {
+      routeSubscription?.remove();
+      appStateSubscription.remove();
+      clearInterval(refreshInterval);
+    };
+  }, [loadAudioRoutes]);
 
   useEffect(() => {
     if (activeSheet === null) {
@@ -648,9 +671,19 @@ export default function PlayerScreen() {
 
   useEffect(() => {
     if (activeSheet === "output") {
-      void loadAudioRoutes();
+      void loadAudioRoutes(true);
     }
   }, [activeSheet, loadAudioRoutes]);
+
+  useEffect(() => {
+    if (
+      activeSheet === "output" &&
+      !loadingAudioRoutes &&
+      audioRoutes.length <= 1
+    ) {
+      setActiveSheet(null);
+    }
+  }, [activeSheet, audioRoutes.length, loadingAudioRoutes]);
 
   if (!currentTrack) {
     return (
@@ -877,11 +910,13 @@ export default function PlayerScreen() {
             label="Equalizer"
             onPress={() => setActiveSheet("equalizer")}
           />
-          <UtilityButton
-            icon="volume-high-outline"
-            label="Output"
-            onPress={() => setActiveSheet("output")}
-          />
+          {audioRoutes.length > 1 ? (
+            <UtilityButton
+              icon="volume-high-outline"
+              label="Output"
+              onPress={() => setActiveSheet("output")}
+            />
+          ) : null}
         </View>
       </View>
 
@@ -1242,7 +1277,7 @@ export default function PlayerScreen() {
                       accessibilityRole="button"
                       disabled={loadingAudioRoutes}
                       hitSlop={8}
-                      onPress={() => void loadAudioRoutes()}
+                      onPress={() => void loadAudioRoutes(true)}
                     >
                       <Ionicons
                         color={theme.accent}

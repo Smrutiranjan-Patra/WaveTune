@@ -14,7 +14,9 @@
     },
     "android": {
       "permissions": [
-        "READ_MEDIA_AUDIO"
+        "READ_MEDIA_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -49,6 +51,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "412913a0-d261-4033-b5a9-1a8378fdc1bd"
+      }
     }
   }
 }
