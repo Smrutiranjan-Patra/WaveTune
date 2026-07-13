@@ -24,7 +24,7 @@ async function getPlayableTrackUri(track: MediaLibrary.Asset) {
   return uri;
 }
 
-export async function playTrack(track: MediaLibrary.Asset) {
+export async function playTrack(track: MediaLibrary.Asset, volume = 1) {
   if (!track.uri) {
     throw new Error("Track URI is missing");
   }
@@ -33,11 +33,15 @@ export async function playTrack(track: MediaLibrary.Asset) {
   const metadata = track as MusicAsset;
   const title =
     metadata.title?.trim() || track.filename.replace(/\.[^/.]+$/, "");
-  const player = await loadAndPlayUri(uri, {
-    albumTitle: metadata.albumTitle?.trim() || UNKNOWN_ALBUM,
-    artist: metadata.artist?.trim() || UNKNOWN_ARTIST,
-    title,
-  });
+  const player = await loadAndPlayUri(
+    uri,
+    {
+      albumTitle: metadata.albumTitle?.trim() || UNKNOWN_ALBUM,
+      artist: metadata.artist?.trim() || UNKNOWN_ARTIST,
+      title,
+    },
+    volume,
+  );
 
   return {
     player,

@@ -5,9 +5,13 @@ import { getDatabaseSync } from "./database.service";
 export type PersistedSettings = {
   audioFocus: boolean;
   crossfade: boolean;
+  equalizerPreset: "off" | "balanced" | "bass" | "vocal" | "treble";
   excludedFolderPaths: string[];
   floatingControlsHidden: boolean;
   gaplessPlayback: boolean;
+  recentSearches: string[];
+  showActualArtwork: boolean;
+  sleepTimerEndsAt: number | null;
   sleepTimerMinutes: number | null;
   themeMode: "light" | "dark" | "auto";
   userName: string | null;
@@ -110,4 +114,10 @@ export function setPersistedSetting<K extends keyof PersistedSettings>(
     [key, JSON.stringify(value), Date.now()],
   );
   writeFallbackSettings(fallbackSettings);
+}
+
+export function clearPersistedSettings() {
+  const database = getDatabaseSync();
+  database?.runSync("DELETE FROM settings");
+  writeFallbackSettings({});
 }

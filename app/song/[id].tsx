@@ -167,7 +167,7 @@ export default function SongDetailsScreen() {
           softShadow(theme.isDark, "high"),
         ]}
       >
-        <Artwork size={180} index={songIndex} />
+        <Artwork size={180} index={songIndex} source={song} />
         <Text
           numberOfLines={2}
           style={{

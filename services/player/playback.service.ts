@@ -104,11 +104,16 @@ export async function getPlaybackPlayer() {
   return player;
 }
 
-export async function loadAndPlayUri(uri: string, metadata: AudioMetadata) {
+export async function loadAndPlayUri(
+  uri: string,
+  metadata: AudioMetadata,
+  volume = 1,
+) {
   await configurePlaybackMode();
 
   const playbackPlayer = await getPlaybackPlayer();
   playbackPlayer.replace(getSource(uri));
+  playbackPlayer.volume = Math.min(Math.max(volume, 0), 1);
   playbackPlayer.setActiveForLockScreen(true, metadata, {
     showSeekBackward: false,
     showSeekForward: false,
@@ -116,6 +121,11 @@ export async function loadAndPlayUri(uri: string, metadata: AudioMetadata) {
   playbackPlayer.play();
 
   return playbackPlayer;
+}
+
+export async function setPlaybackVolume(volume: number) {
+  const playbackPlayer = await getPlaybackPlayer();
+  playbackPlayer.volume = Math.min(Math.max(volume, 0), 1);
 }
 
 export async function pausePlayback() {

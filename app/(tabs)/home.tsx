@@ -52,7 +52,7 @@ function SongTile({
 
   return (
     <Pressable onPress={onPress} style={{ width: 104 }}>
-      <Artwork size={104} index={index} />
+      <Artwork size={104} index={index} source={item.asset} />
       <Text
         numberOfLines={1}
         style={{
@@ -103,7 +103,7 @@ function FavoriteStrip({
             softShadow(theme.isDark, "low"),
           ]}
         >
-          <Artwork size={artworkSize} index={index + 5} />
+          <Artwork size={artworkSize} index={index + 5} source={song.asset} />
           <Text
             numberOfLines={1}
             style={{

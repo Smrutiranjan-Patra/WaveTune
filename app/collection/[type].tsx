@@ -155,6 +155,7 @@ export default function CollectionScreen() {
 
           return (
             <SongListRow
+              artworkSource={item}
               artist={getTrackArtist(item)}
               duration={item.duration}
               index={index}

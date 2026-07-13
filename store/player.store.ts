@@ -10,8 +10,11 @@ import {
   resetAbandonedPlayback,
   resumeTrack,
   seekTrack,
+  setPlaybackVolume,
   subscribeToPlaybackStatus,
 } from "../services/player";
+
+export type RepeatMode = "off" | "all" | "one";
 import { useUserLibraryStore } from "./user-library.store";
 import {
   findQueueIndex,
@@ -30,10 +33,15 @@ type PlayerState = {
   position: number;
   duration: number;
   error: string | null;
+  repeatMode: RepeatMode;
+  shuffleEnabled: boolean;
+  volume: number;
   subscription: EventSubscription | null;
   cleanupPlayer: () => Promise<void>;
   initializePlayer: () => Promise<void>;
   setQueue: (queue: MediaLibrary.Asset[]) => void;
+  moveQueueItem: (fromIndex: number, toIndex: number) => void;
+  removeQueueItem: (trackId: string) => void;
   playSong: (
     track: MediaLibrary.Asset,
     queue?: MediaLibrary.Asset[],
@@ -42,8 +50,11 @@ type PlayerState = {
   resume: () => Promise<void>;
   togglePlayback: () => Promise<void>;
   seekTo: (positionSeconds: number) => Promise<void>;
-  playNext: () => Promise<void>;
+  playNext: (options?: { fromCompletion?: boolean }) => Promise<void>;
   playPrevious: () => Promise<void>;
+  cycleRepeatMode: () => void;
+  toggleShuffle: () => void;
+  setVolume: (volume: number) => void;
   syncStatus: (status: AudioStatus) => void;
 };
 
@@ -57,6 +68,9 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   position: 0,
   duration: 0,
   error: null,
+  repeatMode: "off",
+  shuffleEnabled: false,
+  volume: 1,
   subscription: null,
 
   cleanupPlayer: async () => {
@@ -95,12 +109,51 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     set({ queue: sanitizeQueue(queue) });
   },
 
+  moveQueueItem: (fromIndex, toIndex) => {
+    const { currentTrack, queue } = get();
+    if (
+      fromIndex < 0 ||
+      fromIndex >= queue.length ||
+      toIndex < 0 ||
+      toIndex >= queue.length ||
+      fromIndex === toIndex
+    ) {
+      return;
+    }
+
+    const nextQueue = [...queue];
+    const [movedTrack] = nextQueue.splice(fromIndex, 1);
+    nextQueue.splice(toIndex, 0, movedTrack);
+    set({
+      currentIndex: currentTrack
+        ? findQueueIndex(nextQueue, currentTrack.id)
+        : -1,
+      queue: nextQueue,
+    });
+  },
+
+  removeQueueItem: (trackId) => {
+    const { currentIndex, currentTrack, queue } = get();
+    const index = findQueueIndex(queue, trackId);
+    if (index < 0 || index >= queue.length || index === currentIndex) {
+      return;
+    }
+
+    const nextQueue = queue.filter((_, queueIndex) => queueIndex !== index);
+    set({
+      currentIndex: currentTrack
+        ? findQueueIndex(nextQueue, currentTrack.id)
+        : -1,
+      queue: nextQueue,
+    });
+  },
+
   playSong: async (track, queue) => {
     const nextQueue = sanitizeQueue(queue ?? get().queue);
     const currentIndex = findQueueIndex(nextQueue, track.id);
 
     try {
-      const { status } = await playTrack(track);
+      const { status } = await playTrack(track, get().volume);
 
       if (!get().subscription) {
         const subscription = await subscribeToPlaybackStatus((status) => {
@@ -169,9 +222,25 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     get().syncStatus(status);
   },
 
-  playNext: async () => {
-    const { queue, currentIndex } = get();
-    const nextIndex = getNextQueueIndex(queue, currentIndex);
+  playNext: async (options) => {
+    const { queue, currentIndex, repeatMode, shuffleEnabled } = get();
+
+    if (options?.fromCompletion && repeatMode === "one") {
+      await get().seekTo(0);
+      await get().resume();
+      return;
+    }
+
+    let nextIndex = getNextQueueIndex(queue, currentIndex);
+
+    if (shuffleEnabled && queue.length > 1) {
+      const candidates = queue
+        .map((_, index) => index)
+        .filter((index) => index !== currentIndex);
+      nextIndex = candidates[Math.floor(Math.random() * candidates.length)];
+    } else if (nextIndex < 0 && repeatMode === "all" && queue.length > 0) {
+      nextIndex = 0;
+    }
 
     if (nextIndex < 0) {
       set({
@@ -185,14 +254,52 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   playPrevious: async () => {
-    const { queue, currentIndex } = get();
-    const previousIndex = getPreviousQueueIndex(currentIndex);
+    const { currentIndex, position, queue, repeatMode, shuffleEnabled } = get();
+
+    if (position > 3) {
+      await get().seekTo(0);
+      return;
+    }
+
+    let previousIndex = getPreviousQueueIndex(currentIndex);
+
+    if (shuffleEnabled && queue.length > 1) {
+      const candidates = queue
+        .map((_, index) => index)
+        .filter((index) => index !== currentIndex);
+      previousIndex =
+        candidates[Math.floor(Math.random() * candidates.length)];
+    } else if (previousIndex < 0 && repeatMode === "all" && queue.length > 0) {
+      previousIndex = queue.length - 1;
+    }
 
     if (previousIndex < 0) {
       return;
     }
 
     await get().playSong(queue[previousIndex], queue);
+  },
+
+  cycleRepeatMode: () => {
+    set(({ repeatMode }) => ({
+      repeatMode:
+        repeatMode === "off" ? "all" : repeatMode === "all" ? "one" : "off",
+    }));
+  },
+
+  toggleShuffle: () => {
+    set(({ shuffleEnabled }) => ({ shuffleEnabled: !shuffleEnabled }));
+  },
+
+  setVolume: (volume) => {
+    const nextVolume = Math.min(Math.max(volume, 0), 1);
+    set({ volume: nextVolume });
+    void setPlaybackVolume(nextVolume).catch((error) => {
+      set({
+        error:
+          error instanceof Error ? error.message : "Failed to change volume",
+      });
+    });
   },
 
   syncStatus: (status) => {
@@ -204,7 +311,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
 
     if (status.didJustFinish) {
-      void get().playNext();
+      void get().playNext({ fromCompletion: true });
     }
   },
 }));

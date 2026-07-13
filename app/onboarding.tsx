@@ -111,7 +111,7 @@ export default function OnboardingScreen() {
                 textAlign: "center",
               }}
             >
-              What should we call you while your music library comes alive?
+              Pick a nickname for your personalized WaveTune greeting.
             </Text>
           </View>
 
@@ -124,7 +124,7 @@ export default function OnboardingScreen() {
                 marginBottom: 10,
               }}
             >
-              YOUR NAME
+              YOUR NICKNAME
             </Text>
             <View
               style={{
@@ -146,7 +146,7 @@ export default function OnboardingScreen() {
                 maxLength={28}
                 onChangeText={setName}
                 onSubmitEditing={handleContinue}
-                placeholder="Enter your name"
+                placeholder="e.g. MusicLover"
                 placeholderTextColor={theme.muted}
                 returnKeyType="done"
                 style={{

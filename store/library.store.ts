@@ -40,6 +40,7 @@ interface LibraryState {
   genres: LibraryGenre[];
 
   loadLibraryData: () => Promise<void>;
+  resetLibraryState: () => void;
 }
 
 export const useLibraryStore = create<LibraryState>((set, get) => ({
@@ -55,4 +56,17 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   genres: [],
 
   loadLibraryData: () => loadLibraryData(set, get),
+  resetLibraryState: () => {
+    set({
+      albums: [],
+      artists: [],
+      error: null,
+      folders: [],
+      genres: [],
+      initialized: false,
+      lastScanCount: 0,
+      loading: false,
+      songs: [],
+    });
+  },
 }));

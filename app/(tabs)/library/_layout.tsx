@@ -56,6 +56,7 @@ function LibraryTabBar({ navigation, state }: { navigation: any; state: any }) {
                 }}
                 style={{
                   alignItems: "center",
+                  borderRadius: 11,
                   flex: 1,
                   height: 34,
                   justifyContent: "center",
@@ -70,7 +71,9 @@ function LibraryTabBar({ navigation, state }: { navigation: any; state: any }) {
                         ? "#2B2853"
                         : "#ECEAFF"
                       : "transparent",
-                    borderRadius: 7,
+                    borderColor: focused ? `${theme.accent}55` : "transparent",
+                    borderRadius: 11,
+                    borderWidth: 1,
                     justifyContent: "center",
                     minHeight: 28,
                     paddingHorizontal: 9,

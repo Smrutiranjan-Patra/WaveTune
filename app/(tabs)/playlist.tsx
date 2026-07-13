@@ -14,11 +14,13 @@ import {
   softShadow,
   useAppTheme,
 } from "../../components/DesignSystem";
+import { useLibraryStore } from "../../store/library.store";
 import { useUserLibraryStore } from "../../store/user-library.store";
 
 export default function PlaylistScreen() {
   const theme = useAppTheme();
   const { width } = useWindowDimensions();
+  const songs = useLibraryStore((state) => state.songs);
   const playlists = useUserLibraryStore((state) => state.playlists);
   const favoriteSongIds = useUserLibraryStore((state) => state.favoriteSongIds);
   const cardWidth = (width - 44 - 14) / 2;
@@ -130,6 +132,7 @@ export default function PlaylistScreen() {
             icon={item.isFavorites ? "heart" : "list"}
             size={artworkSize}
             index={item.isFavorites ? 5 : index}
+            source={songs.find((song) => song.id === item.songIds[0])}
           />
           <Text
             numberOfLines={1}

@@ -1,8 +1,9 @@
 // app/_layout.tsx
-import { Stack, usePathname } from "expo-router";
+import { Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "../components/DesignSystem";
 import FloatingSearchButton from "../components/FloatingSearchButton";
@@ -14,7 +15,7 @@ import { useSettingsStore } from "../store/settings.store";
 
 function AppShell() {
   const theme = useAppTheme();
-  const [miniPlayerRevealed, setMiniPlayerRevealed] = useState(false);
+  const [miniPlayerHidden, setMiniPlayerHidden] = useState(false);
   const floatingControlsHidden = useSettingsStore(
     (state) => state.floatingControlsHidden,
   );
@@ -22,12 +23,24 @@ function AppShell() {
     (state) => state.setFloatingControlsHidden,
   );
   const pathname = usePathname();
+  const routeParams = useGlobalSearchParams<{ id?: string; mode?: string }>();
   const isPlayerScreen = pathname === "/player";
   const isOnboardingScreen = pathname === "/onboarding";
+  const isPlaylistScreen = pathname.startsWith("/playlist/");
+  const isPlaylistEditor =
+    isPlaylistScreen &&
+    (routeParams.id === "new" || routeParams.mode === "edit");
+  const isPrivacyPolicyScreen = pathname === "/privacy-policy";
   const isSearchScreen = pathname === "/search";
   const shouldShowHeader = pathname === "/" || pathname === "/home";
   const shouldShowFloatingControls =
-    !isPlayerScreen && !isOnboardingScreen && !isSearchScreen;
+    !isPlayerScreen &&
+    !isOnboardingScreen &&
+    !isPlaylistEditor &&
+    !isPrivacyPolicyScreen &&
+    !isSearchScreen;
+  const shouldShowMiniPlayer =
+    shouldShowFloatingControls && !isPlaylistScreen;
 
   useEffect(() => {
     if (!shouldShowFloatingControls || floatingControlsHidden) {
@@ -44,18 +57,6 @@ function AppShell() {
     setFloatingControlsHidden,
     shouldShowFloatingControls,
   ]);
-
-  useEffect(() => {
-    if (!miniPlayerRevealed) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setMiniPlayerRevealed(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [miniPlayerRevealed]);
 
   return (
     <SafeAreaView
@@ -76,6 +77,7 @@ function AppShell() {
             options={{ headerShown: false, presentation: "modal" }}
           />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
           <Stack.Screen name="playlist/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="song/[id]" options={{ headerShown: false }} />
           <Stack.Screen
@@ -87,21 +89,19 @@ function AppShell() {
             options={{ headerShown: false }}
           />
         </Stack>
-        {shouldShowFloatingControls ? (
+        {shouldShowMiniPlayer ? (
           <MiniPlayer
-            hidden={floatingControlsHidden && !miniPlayerRevealed}
+            hidden={miniPlayerHidden}
+            onSwipeLeft={() => setMiniPlayerHidden(true)}
             reserveSearchSpace={!floatingControlsHidden}
           />
         ) : null}
         {shouldShowFloatingControls ? (
           <FloatingSearchButton
             hidden={floatingControlsHidden}
-            miniPlayerRevealed={miniPlayerRevealed}
-            onHide={() => {
-              setMiniPlayerRevealed(false);
-              setFloatingControlsHidden(true);
-            }}
-            onShowMiniPlayer={() => setMiniPlayerRevealed(true)}
+            miniPlayerHidden={shouldShowMiniPlayer && miniPlayerHidden}
+            onHide={() => setFloatingControlsHidden(true)}
+            onShowMiniPlayer={() => setMiniPlayerHidden(false)}
           />
         ) : null}
       </View>
@@ -111,8 +111,10 @@ function AppShell() {
 
 export default function RootLayout() {
   return (
-    <AppProvider>
-      <AppShell />
-    </AppProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AppProvider>
+        <AppShell />
+      </AppProvider>
+    </GestureHandlerRootView>
   );
 }

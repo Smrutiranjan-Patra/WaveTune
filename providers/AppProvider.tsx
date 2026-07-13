@@ -9,6 +9,11 @@ import { useLibraryStore } from "../store/library.store";
 import { usePlayerStore } from "../store/player.store";
 import { useSettingsStore } from "../store/settings.store";
 import { useUserLibraryStore } from "../store/user-library.store";
+import {
+  subscribeToNotificationPlaybackControls,
+  updateNativeEqualizer,
+  updateNativePlaybackModes,
+} from "../services/player/notification-controls.service";
 
 function WaveTuneMark({ compact = false }: { compact?: boolean }) {
   const theme = useAppTheme();
@@ -317,6 +322,52 @@ export default function AppProvider({
   const initialized = useLibraryStore((state) => state.initialized);
   const loadLibraryData = useLibraryStore((state) => state.loadLibraryData);
   const initializePlayer = usePlayerStore((state) => state.initializePlayer);
+  const equalizerPreset = useSettingsStore((state) => state.equalizerPreset);
+  const repeatMode = usePlayerStore((state) => state.repeatMode);
+  const shuffleEnabled = usePlayerStore((state) => state.shuffleEnabled);
+  const sleepTimerEndsAt = useSettingsStore(
+    (state) => state.sleepTimerEndsAt,
+  );
+
+  useEffect(() => {
+    const subscription = subscribeToNotificationPlaybackControls((control) => {
+      const player = usePlayerStore.getState();
+
+      if (control === "next") void player.playNext();
+      if (control === "previous") void player.playPrevious();
+      if (control === "shuffle") player.toggleShuffle();
+      if (control === "repeat") player.cycleRepeatMode();
+    });
+
+    return () => subscription?.remove();
+  }, []);
+
+  useEffect(() => {
+    updateNativeEqualizer(equalizerPreset);
+  }, [equalizerPreset]);
+
+  useEffect(() => {
+    updateNativePlaybackModes(shuffleEnabled, repeatMode);
+  }, [repeatMode, shuffleEnabled]);
+
+  useEffect(() => {
+    if (!sleepTimerEndsAt) return;
+
+    const finishTimer = () => {
+      const settings = useSettingsStore.getState();
+      void usePlayerStore.getState().pause();
+      settings.setSleepTimerMinutes(null);
+    };
+    const remaining = sleepTimerEndsAt - Date.now();
+
+    if (remaining <= 0) {
+      finishTimer();
+      return;
+    }
+
+    const timer = setTimeout(finishTimer, remaining);
+    return () => clearTimeout(timer);
+  }, [sleepTimerEndsAt]);
 
   useEffect(() => {
     const initializeApp = async () => {

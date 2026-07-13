@@ -1,18 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
+import type * as MediaLibrary from "expo-media-library";
+import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { Artwork, formatTime, softShadow, useAppTheme } from "./DesignSystem";
 
 export function SongListRow({
+  artworkSource,
   artist,
   duration,
   index,
   isCurrentTrack,
-  isPlaying,
   onDetailPress,
   onPress,
+  rightAccessory,
   title,
 }: {
+  artworkSource?: MediaLibrary.Asset;
   artist: string;
   duration?: number;
   index: number;
@@ -20,6 +24,7 @@ export function SongListRow({
   isPlaying: boolean;
   onDetailPress?: () => void;
   onPress?: () => void;
+  rightAccessory?: ReactNode;
   title: string;
 }) {
   const theme = useAppTheme();
@@ -48,7 +53,7 @@ export function SongListRow({
           gap: 12,
         }}
       >
-        <Artwork size={46} index={index} />
+        <Artwork size={46} index={index} source={artworkSource} />
         <View style={{ flex: 1 }}>
           <Text
             numberOfLines={1}
@@ -67,22 +72,26 @@ export function SongListRow({
           {formatTime(duration ?? 190)}
         </Text>
       </Pressable>
-      <Pressable
-        onPress={onDetailPress}
-        hitSlop={10}
-        style={{
-          alignItems: "center",
-          height: 32,
-          justifyContent: "center",
-          width: 32,
-        }}
-      >
-        <Ionicons
-          name={isCurrentTrack && isPlaying ? "pause" : "ellipsis-vertical"}
-          color={isCurrentTrack ? theme.accent : theme.secondary}
-          size={18}
-        />
-      </Pressable>
+      {rightAccessory ?? (
+        <Pressable
+          accessibilityLabel={`View information for ${title}`}
+          accessibilityRole="button"
+          onPress={onDetailPress}
+          hitSlop={10}
+          style={{
+            alignItems: "center",
+            height: 32,
+            justifyContent: "center",
+            width: 32,
+          }}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            color={isCurrentTrack ? theme.accent : theme.secondary}
+            size={20}
+          />
+        </Pressable>
+      )}
     </View>
   );
 }

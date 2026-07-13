@@ -13,11 +13,20 @@ import {
 import { SongListRow } from "../../components/SongListRow";
 import { useLibraryStore } from "../../store/library.store";
 import { usePlayerStore } from "../../store/player.store";
+import { useSettingsStore } from "../../store/settings.store";
 
 export default function SearchScreen() {
   const theme = useAppTheme();
   const [query, setQuery] = useState("");
   const songs = useLibraryStore((state) => state.songs);
+  const addRecentSearch = useSettingsStore((state) => state.addRecentSearch);
+  const clearRecentSearches = useSettingsStore(
+    (state) => state.clearRecentSearches,
+  );
+  const recentSearches = useSettingsStore((state) => state.recentSearches);
+  const removeRecentSearch = useSettingsStore(
+    (state) => state.removeRecentSearch,
+  );
   const { currentTrack, isPlaying, pause, playSong, resume } = usePlayerStore();
   const normalizedQuery = query.trim().toLocaleLowerCase();
 
@@ -32,6 +41,8 @@ export default function SearchScreen() {
   }, [normalizedQuery, songs]);
 
   const handlePress = async (song: MediaLibrary.Asset) => {
+    addRecentSearch(query);
+
     if (currentTrack?.id !== song.id) {
       await playSong(song, results);
       return;
@@ -85,6 +96,7 @@ export default function SearchScreen() {
                   autoCorrect={false}
                   autoFocus
                   onChangeText={setQuery}
+                  onSubmitEditing={() => addRecentSearch(query)}
                   placeholder="Search songs"
                   placeholderTextColor={theme.secondary}
                   returnKeyType="search"
@@ -139,6 +151,86 @@ export default function SearchScreen() {
               <Text style={{ color: theme.secondary, fontSize: 12 }}>
                 {results.length} {results.length === 1 ? "result" : "results"}
               </Text>
+            ) : recentSearches.length > 0 ? (
+              <View style={{ gap: 8 }}>
+                <View
+                  style={{
+                    alignItems: "center",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.primary,
+                      fontSize: 14,
+                      fontWeight: "900",
+                    }}
+                  >
+                    Recent searches
+                  </Text>
+                  <Pressable
+                    accessibilityLabel="Clear all recent searches"
+                    accessibilityRole="button"
+                    hitSlop={8}
+                    onPress={clearRecentSearches}
+                  >
+                    <Text
+                      style={{
+                        color: theme.accent,
+                        fontSize: 12,
+                        fontWeight: "900",
+                      }}
+                    >
+                      Clear all
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {recentSearches.map((recentQuery) => (
+                  <Pressable
+                    accessibilityLabel={`Search for ${recentQuery}`}
+                    accessibilityRole="button"
+                    key={recentQuery}
+                    onPress={() => setQuery(recentQuery)}
+                    style={{
+                      alignItems: "center",
+                      borderBottomColor: theme.border,
+                      borderBottomWidth: 1,
+                      flexDirection: "row",
+                      gap: 12,
+                      minHeight: 44,
+                    }}
+                  >
+                    <Ionicons
+                      color={theme.secondary}
+                      name="time-outline"
+                      size={18}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      style={{ color: theme.primary, flex: 1, fontSize: 13 }}
+                    >
+                      {recentQuery}
+                    </Text>
+                    <Pressable
+                      accessibilityLabel={`Remove ${recentQuery}`}
+                      accessibilityRole="button"
+                      hitSlop={10}
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        removeRecentSearch(recentQuery);
+                      }}
+                    >
+                      <Ionicons
+                        color={theme.secondary}
+                        name="close"
+                        size={18}
+                      />
+                    </Pressable>
+                  </Pressable>
+                ))}
+              </View>
             ) : null}
           </View>
         }
@@ -175,6 +267,7 @@ export default function SearchScreen() {
 
           return (
             <SongListRow
+              artworkSource={item}
               artist={getTrackArtist(item)}
               duration={item.duration}
               index={index}

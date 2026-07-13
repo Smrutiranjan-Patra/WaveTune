@@ -1,7 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import type * as MediaLibrary from "expo-media-library";
 import type { ComponentProps, ReactNode } from "react";
-import { Image, Pressable, Text, useColorScheme, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Image,
+  Platform,
+  Pressable,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 
 import { useSettingsStore } from "../store/settings.store";
 import type { MusicAsset } from "../types/music";
@@ -145,20 +153,38 @@ export function Artwork({
   icon = "musical-notes",
   imageUri,
   index = 0,
+  source,
   size = 92,
 }: {
   icon?: IconName;
   imageUri?: string | null;
   index?: number;
+  source?: MediaLibrary.Asset | null;
   size?: number;
 }) {
   const theme = useAppTheme();
+  const showActualArtwork = useSettingsStore(
+    (state) => state.showActualArtwork,
+  );
+  const albumId = source?.albumId?.toString().trim();
+  const resolvedImageUri =
+    imageUri ??
+    (Platform.OS === "android" && albumId
+      ? `content://media/external/audio/albumart/${albumId}`
+      : null);
+  const [imageFailed, setImageFailed] = useState(false);
   const [from, to] = artworkPalette[index % artworkPalette.length];
 
-  if (imageUri) {
+  useEffect(() => {
+    setImageFailed(false);
+  }, [resolvedImageUri, showActualArtwork]);
+
+  if (showActualArtwork && resolvedImageUri && !imageFailed) {
     return (
       <Image
-        source={{ uri: imageUri }}
+        onError={() => setImageFailed(true)}
+        resizeMode="cover"
+        source={{ uri: resolvedImageUri }}
         style={{
           backgroundColor: from,
           borderRadius: 12,

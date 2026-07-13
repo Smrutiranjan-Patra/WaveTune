@@ -15,6 +15,7 @@ export default function Albums() {
   const cardWidth = (width - 44 - 14) / 2;
   const artworkSize = Math.min(128, cardWidth - 20);
   const data = albums.map((album, index) => ({
+    artworkSource: album.songs[0],
     id: album.id,
     songs: album.songs.length,
     title: album.name,
@@ -60,7 +61,11 @@ export default function Albums() {
             softShadow(theme.isDark, "low"),
           ]}
         >
-          <Artwork size={artworkSize} index={item.index} />
+          <Artwork
+            size={artworkSize}
+            index={item.index}
+            source={item.artworkSource}
+          />
           <Text
             numberOfLines={1}
             style={{

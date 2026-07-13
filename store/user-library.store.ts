@@ -28,6 +28,7 @@ interface UserLibraryState {
     updates: { name?: string; songIds?: string[] },
   ) => void;
   setPlaylistSongs: (playlistId: string, songIds: string[]) => void;
+  resetUserLibraryState: () => void;
 }
 
 export const useUserLibraryStore = create<UserLibraryState>((set, get) => ({
@@ -136,5 +137,8 @@ export const useUserLibraryStore = create<UserLibraryState>((set, get) => ({
     set({ playlists });
     const playlist = playlists.find((item) => item.id === playlistId);
     if (playlist) void savePlaylist(playlist);
+  },
+  resetUserLibraryState: () => {
+    set({ favoriteSongIds: [], history: [], hydrated: true, playlists: [] });
   },
 }));

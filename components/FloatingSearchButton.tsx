@@ -8,12 +8,12 @@ import { usePlayerStore } from "../store/player.store";
 
 export default function FloatingSearchButton({
   hidden,
-  miniPlayerRevealed,
+  miniPlayerHidden,
   onHide,
   onShowMiniPlayer,
 }: {
   hidden: boolean;
-  miniPlayerRevealed: boolean;
+  miniPlayerHidden: boolean;
   onHide: () => void;
   onShowMiniPlayer: () => void;
 }) {
@@ -31,7 +31,7 @@ export default function FloatingSearchButton({
 
   return (
     <>
-      {hidden && currentTrack && !miniPlayerRevealed ? (
+      {miniPlayerHidden && currentTrack ? (
         <Pressable
           accessibilityLabel="Show MiniPlayer"
           accessibilityRole="button"
@@ -135,7 +135,7 @@ export default function FloatingSearchButton({
         </Pressable>
 
         <Pressable
-          accessibilityLabel="Hide player and search"
+          accessibilityLabel="Hide search"
           accessibilityRole="button"
           hitSlop={8}
           onPress={onHide}

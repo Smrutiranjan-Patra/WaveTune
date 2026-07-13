@@ -13,6 +13,7 @@ export default function Artists() {
   const theme = useAppTheme();
   const artists = useLibraryStore((state) => state.artists);
   const data = artists.map((artist, index) => ({
+    artworkSource: artist.songs[0],
     name: artist.name,
     songs: artist.songs.length,
     index,
@@ -57,7 +58,12 @@ export default function Artists() {
             softShadow(theme.isDark, "low"),
           ]}
         >
-          <Artwork icon="person" size={48} index={item.index} />
+          <Artwork
+            icon="person"
+            size={48}
+            index={item.index}
+            source={item.artworkSource}
+          />
           <View style={{ flex: 1 }}>
             <Text
               numberOfLines={1}

@@ -6,43 +6,93 @@ import {
 } from "../services/database/settings.repository";
 
 export type ThemeMode = "light" | "dark" | "auto";
+export type EqualizerPreset =
+  | "off"
+  | "balanced"
+  | "bass"
+  | "vocal"
+  | "treble";
 
 interface SettingsState {
   audioFocus: boolean;
   crossfade: boolean;
+  equalizerPreset: EqualizerPreset;
   excludedFolderPaths: string[];
   floatingControlsHidden: boolean;
   gaplessPlayback: boolean;
   hydrated: boolean;
+  recentSearches: string[];
+  showActualArtwork: boolean;
+  sleepTimerEndsAt: number | null;
   sleepTimerMinutes: number | null;
   themeMode: ThemeMode;
   userName: string | null;
   hydrateSettings: () => Promise<void>;
+  addRecentSearch: (query: string) => void;
+  clearRecentSearches: () => void;
+  removeRecentSearch: (query: string) => void;
   setAudioFocus: (enabled: boolean) => void;
   setCrossfade: (enabled: boolean) => void;
+  setEqualizerPreset: (preset: EqualizerPreset) => void;
   setFloatingControlsHidden: (hidden: boolean) => void;
   setGaplessPlayback: (enabled: boolean) => void;
+  setShowActualArtwork: (enabled: boolean) => void;
   setThemeMode: (themeMode: ThemeMode) => void;
   setUserName: (userName: string) => void;
   setSleepTimerMinutes: (minutes: number | null) => void;
   toggleFolderSelection: (folderPath: string) => void;
   clearFolderSelection: () => void;
+  resetSettingsState: () => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
+const defaultSettings = {
   audioFocus: true,
   crossfade: true,
-  excludedFolderPaths: [],
+  equalizerPreset: "off" as EqualizerPreset,
+  excludedFolderPaths: [] as string[],
   floatingControlsHidden: false,
   gaplessPlayback: true,
+  recentSearches: [] as string[],
+  showActualArtwork: false,
+  sleepTimerEndsAt: null as number | null,
+  sleepTimerMinutes: null as number | null,
+  themeMode: "auto" as ThemeMode,
+  userName: null as string | null,
+};
+
+export const useSettingsStore = create<SettingsState>((set, get) => ({
+  ...defaultSettings,
   hydrated: false,
-  sleepTimerMinutes: null,
-  themeMode: "auto",
-  userName: null,
 
   hydrateSettings: async () => {
     const persisted = await getPersistedSettings();
     set({ ...persisted, hydrated: true });
+  },
+  addRecentSearch: (query) => {
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) return;
+
+    const recentSearches = [
+      normalizedQuery,
+      ...get().recentSearches.filter(
+        (item) =>
+          item.toLocaleLowerCase() !== normalizedQuery.toLocaleLowerCase(),
+      ),
+    ].slice(0, 12);
+
+    set({ recentSearches });
+    void setPersistedSetting("recentSearches", recentSearches);
+  },
+  clearRecentSearches: () => {
+    set({ recentSearches: [] });
+    void setPersistedSetting("recentSearches", []);
+  },
+  removeRecentSearch: (query) => {
+    const recentSearches = get().recentSearches.filter(
+      (item) => item !== query,
+    );
+    set({ recentSearches });
+    void setPersistedSetting("recentSearches", recentSearches);
   },
   setAudioFocus: (audioFocus) => {
     set({ audioFocus });
@@ -52,6 +102,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ crossfade });
     void setPersistedSetting("crossfade", crossfade);
   },
+  setEqualizerPreset: (equalizerPreset) => {
+    set({ equalizerPreset });
+    void setPersistedSetting("equalizerPreset", equalizerPreset);
+  },
   setFloatingControlsHidden: (floatingControlsHidden) => {
     set({ floatingControlsHidden });
     void setPersistedSetting("floatingControlsHidden", floatingControlsHidden);
@@ -59,6 +113,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setGaplessPlayback: (gaplessPlayback) => {
     set({ gaplessPlayback });
     void setPersistedSetting("gaplessPlayback", gaplessPlayback);
+  },
+  setShowActualArtwork: (showActualArtwork) => {
+    set({ showActualArtwork });
+    void setPersistedSetting("showActualArtwork", showActualArtwork);
   },
   setThemeMode: (themeMode) => {
     set({ themeMode });
@@ -70,7 +128,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     void setPersistedSetting("userName", normalizedName || null);
   },
   setSleepTimerMinutes: (sleepTimerMinutes) => {
-    set({ sleepTimerMinutes });
+    const sleepTimerEndsAt = sleepTimerMinutes
+      ? Date.now() + sleepTimerMinutes * 60 * 1000
+      : null;
+    set({ sleepTimerEndsAt, sleepTimerMinutes });
+    void setPersistedSetting("sleepTimerEndsAt", sleepTimerEndsAt);
     void setPersistedSetting("sleepTimerMinutes", sleepTimerMinutes);
   },
   toggleFolderSelection: (folderPath) => {
@@ -84,5 +146,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   clearFolderSelection: () => {
     set({ excludedFolderPaths: [] });
     void setPersistedSetting("excludedFolderPaths", []);
+  },
+  resetSettingsState: () => {
+    set({ ...defaultSettings, hydrated: true });
   },
 }));
