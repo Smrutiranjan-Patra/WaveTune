@@ -2,12 +2,20 @@ import type { LibraryAlbum } from "../../store/library.store";
 import type { MusicAsset } from "../../types/music";
 import { UNKNOWN_ALBUM } from "../../types/music";
 
+function normalizeAlbumName(name: string) {
+  return name.replace(/\s+/g, " ").trim();
+}
+
+function getAlbumGroupKey(name: string) {
+  return normalizeAlbumName(name).toLocaleLowerCase();
+}
+
 const getAlbums = (songs: MusicAsset[]): LibraryAlbum[] => {
   const albums = new Map<string, LibraryAlbum>();
 
   songs.forEach((song) => {
-    const name = song.albumTitle?.trim() || UNKNOWN_ALBUM;
-    const id = song.albumId ?? name.toLocaleLowerCase();
+    const name = normalizeAlbumName(song.albumTitle ?? "") || UNKNOWN_ALBUM;
+    const id = getAlbumGroupKey(name);
 
     if (!albums.has(id)) {
       albums.set(id, {

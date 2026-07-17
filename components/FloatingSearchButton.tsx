@@ -43,7 +43,7 @@ export default function FloatingSearchButton({
               borderColor: theme.border,
               borderRadius: 24,
               borderWidth: 1,
-              bottom: 90,
+              bottom: 106,
               height: 48,
               justifyContent: "center",
               left: -14,
@@ -71,7 +71,7 @@ export default function FloatingSearchButton({
               borderColor: theme.isDark ? "#857EFF" : "#FFFFFF",
               borderRadius: 24,
               borderWidth: 2,
-              bottom: 90,
+              bottom: 106,
               height: 48,
               justifyContent: "center",
               paddingLeft: 8,
@@ -90,7 +90,7 @@ export default function FloatingSearchButton({
       <Animated.View
         pointerEvents={hidden ? "none" : "box-none"}
         style={{
-          bottom: 85,
+          bottom: 101,
           height: 72,
           opacity: slideProgress.interpolate({
             inputRange: [0, 1],

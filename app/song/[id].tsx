@@ -1,6 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import {
   Artwork,
@@ -13,6 +24,52 @@ import {
 import { useLibraryStore } from "../../store/library.store";
 import { usePlayerStore } from "../../store/player.store";
 import { useUserLibraryStore } from "../../store/user-library.store";
+
+type MetadataForm = {
+  albumTitle: string;
+  artist: string;
+  genre: string;
+  title: string;
+};
+
+function MetadataInput({
+  label,
+  onChangeText,
+  value,
+}: {
+  label: string;
+  onChangeText: (value: string) => void;
+  value: string;
+}) {
+  const theme = useAppTheme();
+
+  return (
+    <View style={{ gap: 7 }}>
+      <Text style={{ color: theme.secondary, fontSize: 11, fontWeight: "900" }}>
+        {label}
+      </Text>
+      <TextInput
+        autoCapitalize="words"
+        onChangeText={onChangeText}
+        placeholder={`Enter ${label.toLowerCase()}`}
+        placeholderTextColor={theme.muted}
+        selectionColor={theme.accent}
+        style={{
+          backgroundColor: theme.cardSoft,
+          borderColor: theme.border,
+          borderRadius: 14,
+          borderWidth: 1,
+          color: theme.primary,
+          fontSize: 14,
+          fontWeight: "800",
+          minHeight: 46,
+          paddingHorizontal: 14,
+        }}
+        value={value}
+      />
+    </View>
+  );
+}
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   const theme = useAppTheme();
@@ -40,6 +97,9 @@ export default function SongDetailsScreen() {
   const theme = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const songs = useLibraryStore((state) => state.songs);
+  const updateSongMetadata = useLibraryStore(
+    (state) => state.updateSongMetadata,
+  );
   const playSong = usePlayerStore((state) => state.playSong);
   const favoriteSongIds = useUserLibraryStore((state) => state.favoriteSongIds);
   const playlists = useUserLibraryStore((state) => state.playlists);
@@ -50,6 +110,65 @@ export default function SongDetailsScreen() {
   const songIndex = songs.findIndex((item) => item.id === id);
   const song = songs[songIndex];
   const isFavorite = favoriteSongIds.includes(id ?? "");
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [savingMetadata, setSavingMetadata] = useState(false);
+  const [metadataForm, setMetadataForm] = useState<MetadataForm>({
+    albumTitle: "",
+    artist: "",
+    genre: "",
+    title: "",
+  });
+
+  useEffect(() => {
+    if (!song) {
+      return;
+    }
+
+    setMetadataForm({
+      albumTitle: song.albumTitle ?? "",
+      artist: song.artist ?? "",
+      genre: song.genre ?? "",
+      title: song.title ?? getTrackTitle(song),
+    });
+  }, [song?.albumTitle, song?.artist, song?.genre, song?.id, song?.title]);
+
+  const setMetadataField =
+    (field: keyof MetadataForm) => (value: string) => {
+      setMetadataForm((currentForm) => ({
+        ...currentForm,
+        [field]: value,
+      }));
+    };
+
+  const saveMetadata = async () => {
+    if (!song || savingMetadata) {
+      return;
+    }
+
+    setSavingMetadata(true);
+
+    try {
+      const result = await updateSongMetadata(song.id, metadataForm);
+
+      setEditorVisible(false);
+
+      if (!result.deviceUpdated) {
+        Alert.alert(
+          "Saved in WaveTune",
+          "Android did not allow updating the system music record, so these edits are saved inside WaveTune.",
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Unable to save metadata",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while saving the metadata.",
+      );
+    } finally {
+      setSavingMetadata(false);
+    }
+  };
 
   const togglePlaylist = (playlistId: string) => {
     const playlist = playlists.find((item) => item.id === playlistId);
@@ -92,16 +211,17 @@ export default function SongDetailsScreen() {
   }
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      style={{ backgroundColor: theme.background, flex: 1 }}
-      contentContainerStyle={{
-        gap: 18,
-        paddingBottom: 152,
-        paddingHorizontal: 22,
-        paddingTop: 14,
-      }}
-    >
+    <>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ backgroundColor: theme.background, flex: 1 }}
+        contentContainerStyle={{
+          gap: 18,
+          paddingBottom: 152,
+          paddingHorizontal: 22,
+          paddingTop: 14,
+        }}
+      >
       <View
         style={{
           alignItems: "center",
@@ -130,28 +250,49 @@ export default function SongDetailsScreen() {
         <Text style={{ color: theme.primary, fontSize: 18, fontWeight: "900" }}>
           Song Details
         </Text>
-        <Pressable
-          onPress={() => toggleFavorite(song.id)}
-          style={[
-            {
-              alignItems: "center",
-              backgroundColor: theme.card,
-              borderColor: theme.border,
-              borderRadius: 18,
-              borderWidth: 1,
-              height: 38,
-              justifyContent: "center",
-              width: 38,
-            },
-            softShadow(theme.isDark, "low"),
-          ]}
-        >
-          <Ionicons
-            name={isFavorite ? "heart" : "heart-outline"}
-            color={isFavorite ? "#EF476F" : theme.icon}
-            size={20}
-          />
-        </Pressable>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setEditorVisible(true)}
+            style={[
+              {
+                alignItems: "center",
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+                borderRadius: 18,
+                borderWidth: 1,
+                height: 38,
+                justifyContent: "center",
+                width: 38,
+              },
+              softShadow(theme.isDark, "low"),
+            ]}
+          >
+            <Ionicons name="create-outline" color={theme.icon} size={19} />
+          </Pressable>
+          <Pressable
+            onPress={() => toggleFavorite(song.id)}
+            style={[
+              {
+                alignItems: "center",
+                backgroundColor: theme.card,
+                borderColor: theme.border,
+                borderRadius: 18,
+                borderWidth: 1,
+                height: 38,
+                justifyContent: "center",
+                width: 38,
+              },
+              softShadow(theme.isDark, "low"),
+            ]}
+          >
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              color={isFavorite ? "#EF476F" : theme.icon}
+              size={20}
+            />
+          </Pressable>
+        </View>
       </View>
 
       <View
@@ -223,6 +364,7 @@ export default function SongDetailsScreen() {
           softShadow(theme.isDark, "low"),
         ]}
       >
+        <DetailRow label="Title" value={getTrackTitle(song)} />
         <DetailRow label="Duration" value={formatTime(song.duration ?? 0)} />
         <DetailRow label="Artist" value={song.artist ?? "Unknown Artist"} />
         <DetailRow label="Album" value={song.albumTitle ?? "Unknown Album"} />
@@ -346,6 +488,156 @@ export default function SongDetailsScreen() {
           </View>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => {
+          if (!savingMetadata) {
+            setEditorVisible(false);
+          }
+        }}
+        transparent
+        visible={editorVisible}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{
+            backgroundColor: theme.isDark
+              ? "rgba(4, 8, 14, 0.78)"
+              : "rgba(18, 22, 42, 0.28)",
+            flex: 1,
+            justifyContent: "flex-end",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              borderWidth: 1,
+              gap: 18,
+              maxHeight: "88%",
+              paddingBottom: 28,
+              paddingHorizontal: 22,
+              paddingTop: 20,
+            }}
+          >
+            <View
+              style={{
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 18,
+                  fontWeight: "900",
+                }}
+              >
+                Edit Metadata
+              </Text>
+              <Pressable
+                disabled={savingMetadata}
+                onPress={() => setEditorVisible(false)}
+                style={{
+                  alignItems: "center",
+                  height: 36,
+                  justifyContent: "center",
+                  opacity: savingMetadata ? 0.5 : 1,
+                  width: 36,
+                }}
+              >
+                <Ionicons name="close" color={theme.icon} size={22} />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              style={{ maxHeight: 360 }}
+              contentContainerStyle={{ gap: 14 }}
+            >
+              <MetadataInput
+                label="Title"
+                onChangeText={setMetadataField("title")}
+                value={metadataForm.title}
+              />
+              <MetadataInput
+                label="Artist"
+                onChangeText={setMetadataField("artist")}
+                value={metadataForm.artist}
+              />
+              <MetadataInput
+                label="Album"
+                onChangeText={setMetadataField("albumTitle")}
+                value={metadataForm.albumTitle}
+              />
+              <MetadataInput
+                label="Genre"
+                onChangeText={setMetadataField("genre")}
+                value={metadataForm.genre}
+              />
+            </ScrollView>
+
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Pressable
+                disabled={savingMetadata}
+                onPress={() => setEditorVisible(false)}
+                style={{
+                  alignItems: "center",
+                  backgroundColor: theme.cardSoft,
+                  borderColor: theme.border,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  flex: 1,
+                  justifyContent: "center",
+                  minHeight: 46,
+                  opacity: savingMetadata ? 0.6 : 1,
+                }}
+              >
+                <Text
+                  style={{
+                    color: theme.primary,
+                    fontSize: 13,
+                    fontWeight: "900",
+                  }}
+                >
+                  Cancel
+                </Text>
+              </Pressable>
+              <Pressable
+                disabled={savingMetadata}
+                onPress={() => {
+                  void saveMetadata();
+                }}
+                style={{
+                  alignItems: "center",
+                  backgroundColor: theme.accent,
+                  borderRadius: 16,
+                  flex: 1,
+                  justifyContent: "center",
+                  minHeight: 46,
+                  opacity: savingMetadata ? 0.72 : 1,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: 13,
+                    fontWeight: "900",
+                  }}
+                >
+                  {savingMetadata ? "Saving..." : "Save"}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 }

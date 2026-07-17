@@ -6,16 +6,7 @@ import { useSettingsStore } from "../store/settings.store";
 const Header = () => {
   const theme = useAppTheme();
   const userName = useSettingsStore((state) => state.userName);
-  const hour = new Date().getHours();
-
-  const greeting =
-    hour < 12
-      ? "Good Morning"
-      : hour < 17
-        ? "Good Afternoon"
-        : hour < 21
-          ? "Good Evening"
-          : "Good Night";
+  const displayName = userName.trim();
 
   return (
     <View
@@ -34,11 +25,17 @@ const Header = () => {
         }}
       >
         <View>
-          <Text style={{ color: theme.primary, fontSize: 22, fontWeight: "900" }}>
-            {userName ? `${greeting}, ${userName}` : greeting}
+          <Text
+            style={{
+              color: theme.primary,
+              fontSize: 23,
+              fontWeight: "900",
+            }}
+          >
+            {displayName ? `Ready to listen, ${displayName}?` : "Ready to listen?"}
           </Text>
           <Text style={{ color: theme.secondary, fontSize: 12, marginTop: 2 }}>
-            Enjoy your music
+            Your music, right where you left it
           </Text>
         </View>
       </View>

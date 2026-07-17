@@ -12,6 +12,7 @@ export async function resetPersistedAppData() {
         DELETE FROM favorite_songs;
         DELETE FROM playback_history;
         DELETE FROM songs;
+        DELETE FROM song_metadata_overrides;
         DELETE FROM app_metadata;
         DELETE FROM settings;
       `);

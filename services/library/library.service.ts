@@ -12,7 +12,7 @@ import { getArtists } from "../../helpers/library/artists";
 import { getGenres } from "../../helpers/library/genres";
 import { getFolders } from "../../helpers/library/folders";
 
-function buildLibrary(songs: MusicAsset[]) {
+export function buildLibrary(songs: MusicAsset[]) {
   return {
     songs,
     albums: getAlbums(songs),

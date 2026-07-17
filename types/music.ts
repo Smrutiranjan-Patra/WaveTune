@@ -3,6 +3,7 @@ import type * as MediaLibrary from "expo-media-library";
 export type MusicAsset = MediaLibrary.Asset & {
   albumTitle?: string;
   artist?: string;
+  fileSize?: number;
   genre?: string;
   title?: string;
 };

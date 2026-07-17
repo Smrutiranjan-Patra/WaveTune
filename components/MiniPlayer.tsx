@@ -104,7 +104,7 @@ export default function MiniPlayer({
         position: "absolute",
         left: 15,
         right: reserveSearchSpace ? 88 : 40,
-        bottom: 85,
+        bottom: 100,
         borderRadius: 16,
         backgroundColor: theme.card,
         borderColor: theme.border,

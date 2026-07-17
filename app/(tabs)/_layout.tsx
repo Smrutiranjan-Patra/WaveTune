@@ -28,10 +28,12 @@ export default function TabLayout() {
         },
         tabBarInactiveTintColor: theme.tabInactive,
         tabBarItemStyle: {
-          borderRadius: 12,
+          borderRadius: 16,
+          height: 52,
+          justifyContent: "center",
           marginHorizontal: 2,
-          paddingHorizontal: 3,
-          paddingVertical: 2,
+          paddingHorizontal: 4,
+          paddingVertical: 4,
         },
         tabBarLabelStyle: {
           fontSize: 10,
@@ -39,21 +41,34 @@ export default function TabLayout() {
           lineHeight: 14,
           margin: 0,
         },
+        tabBarBackground: () => (
+          <View
+            pointerEvents="none"
+            style={{
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+              borderRadius: 24,
+              borderWidth: 1,
+              bottom: 0,
+              left: 17,
+              position: "absolute",
+              right: 17,
+              top: 0,
+              ...softShadow(theme.isDark, "high"),
+            }}
+          />
+        ),
         tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: theme.card,
-          borderColor: theme.border,
-          borderRadius: 18,
-          borderTopWidth: 1,
-          bottom: 12,
-          height: 72,
-          left: 12,
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          bottom: 18,
+          elevation: 0,
+          height: 70,
           paddingBottom: 8,
-          paddingHorizontal: 10,
+          paddingHorizontal: 38,
           paddingTop: 8,
           position: "absolute",
-          right: 12,
-          ...softShadow(theme.isDark, "high"),
         },
       }}
     >

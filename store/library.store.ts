@@ -3,6 +3,13 @@
 import { create } from "zustand";
 
 import { loadLibraryData } from "./handlers/library.handlers";
+import { usePlayerStore } from "./player.store";
+import { buildLibrary } from "../services/library/library.service";
+import {
+  type EditableSongMetadata,
+  saveSongMetadata,
+  type SaveSongMetadataResult,
+} from "../services/library/metadata-editor.service";
 import type { MusicAsset } from "../types/music";
 
 export type LibraryAlbum = {
@@ -40,6 +47,10 @@ interface LibraryState {
   genres: LibraryGenre[];
 
   loadLibraryData: () => Promise<void>;
+  updateSongMetadata: (
+    songId: string,
+    metadata: EditableSongMetadata,
+  ) => Promise<SaveSongMetadataResult>;
   resetLibraryState: () => void;
 }
 
@@ -56,6 +67,29 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   genres: [],
 
   loadLibraryData: () => loadLibraryData(set, get),
+  updateSongMetadata: async (songId, metadata) => {
+    const result = await saveSongMetadata(songId, metadata);
+    const songs = get().songs.map((song) =>
+      song.id === songId
+        ? {
+            ...song,
+            albumTitle: result.metadata.albumTitle ?? undefined,
+            artist: result.metadata.artist ?? undefined,
+            genre: result.metadata.genre ?? undefined,
+            title: result.metadata.title ?? undefined,
+          }
+        : song,
+    );
+
+    set({
+      ...buildLibrary(songs),
+      lastScanCount: songs.length,
+    });
+
+    usePlayerStore.getState().updateTrackMetadata(songId, result.metadata);
+
+    return result;
+  },
   resetLibraryState: () => {
     set({
       albums: [],

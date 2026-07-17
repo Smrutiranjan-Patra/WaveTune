@@ -16,6 +16,7 @@ const MIGRATION_SQL = `
     creation_time REAL NOT NULL DEFAULT 0,
     modification_time REAL NOT NULL DEFAULT 0,
     duration REAL NOT NULL DEFAULT 0,
+    file_size REAL NOT NULL DEFAULT 0,
     album_id TEXT,
     title TEXT,
     artist TEXT,
@@ -26,6 +27,15 @@ const MIGRATION_SQL = `
 
   CREATE INDEX IF NOT EXISTS idx_songs_filename ON songs(filename);
   CREATE INDEX IF NOT EXISTS idx_songs_album_id ON songs(album_id);
+
+  CREATE TABLE IF NOT EXISTS song_metadata_overrides (
+    song_id TEXT PRIMARY KEY NOT NULL,
+    title TEXT,
+    artist TEXT,
+    album_title TEXT,
+    genre TEXT,
+    updated_at REAL NOT NULL
+  );
 
   CREATE TABLE IF NOT EXISTS app_metadata (
     key TEXT PRIMARY KEY NOT NULL,
@@ -76,6 +86,7 @@ let databasePromise: Promise<SQLite.SQLiteDatabase | null> | null = null;
 let syncDatabase: SQLite.SQLiteDatabase | null | undefined;
 
 const songMetadataColumns = [
+  ["file_size", "REAL NOT NULL DEFAULT 0"],
   ["title", "TEXT"],
   ["artist", "TEXT"],
   ["album_title", "TEXT"],

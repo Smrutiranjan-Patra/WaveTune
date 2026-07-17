@@ -1,5 +1,7 @@
+import { getInfoAsync } from "expo-file-system/legacy";
 import * as MediaLibrary from "expo-media-library";
 import { useSettingsStore } from "../../store/settings.store";
+import type { MusicAsset } from "../../types/music";
 import { enrichSongMetadata } from "./metadata.service";
 
 const normalizeFolderPath = (folderPath: string) => {
@@ -31,6 +33,36 @@ const getAssetFolderPath = (asset: MediaLibrary.Asset) => {
 
   return normalizedPath.substring(0, lastSlashIndex);
 };
+
+const FILE_SIZE_BATCH_SIZE = 40;
+
+async function getFileSize(song: MusicAsset) {
+  try {
+    const info = await getInfoAsync(song.uri);
+
+    return info.exists && !info.isDirectory ? info.size : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function addFileSizes(songs: MusicAsset[]) {
+  const songsWithSizes: MusicAsset[] = [];
+
+  for (let index = 0; index < songs.length; index += FILE_SIZE_BATCH_SIZE) {
+    const batch = songs.slice(index, index + FILE_SIZE_BATCH_SIZE);
+    const resolvedBatch = await Promise.all(
+      batch.map(async (song) => ({
+        ...song,
+        fileSize: await getFileSize(song),
+      })),
+    );
+
+    songsWithSizes.push(...resolvedBatch);
+  }
+
+  return songsWithSizes;
+}
 
 export async function scanSongs() {
   const excludedFolderPaths = useSettingsStore.getState().excludedFolderPaths;
@@ -65,7 +97,7 @@ export async function scanSongs() {
     });
   });
 
-  return enrichSongMetadata(includedSongs);
+  return addFileSizes(await enrichSongMetadata(includedSongs));
 }
 
 export async function getAvailableMusicFolders() {

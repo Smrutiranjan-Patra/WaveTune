@@ -1,8 +1,10 @@
 package com.wavetune.audioroute
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.ContentObserver
 import android.media.MediaRouter
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -79,6 +81,10 @@ class WaveTuneAudioRouteModule : Module() {
 
     AsyncFunction("getAudioMetadata") { assetIds: List<String> ->
       getAudioMetadata(assetIds)
+    }
+
+    AsyncFunction("updateAudioMetadata") { assetId: String, metadata: Map<String, String?> ->
+      updateAudioMetadata(assetId, metadata)
     }
 
     AsyncFunction("selectAudioRoute") { routeId: String ->
@@ -206,6 +212,20 @@ class WaveTuneAudioRouteModule : Module() {
     return assetIds.mapNotNull { metadataById[it] }
   }
 
+  private fun updateAudioMetadata(assetId: String, metadata: Map<String, String?>): Boolean {
+    val values = ContentValues().apply {
+      putNullableString(MediaStore.Audio.Media.TITLE, metadata["title"])
+      putNullableString(MediaStore.Audio.Media.ARTIST, metadata["artist"])
+      putNullableString(MediaStore.Audio.Media.ALBUM, metadata["albumTitle"])
+    }
+
+    if (values.size() == 0) return true
+
+    val uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, assetId)
+
+    return context.contentResolver.update(uri, values, null, null) > 0
+  }
+
   private fun getRouteType(route: MediaRouter.RouteInfo): String {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return "device"
 
@@ -222,4 +242,12 @@ private fun android.database.Cursor.getNullableString(columnIndex: Int): String?
   if (columnIndex < 0 || isNull(columnIndex)) return null
 
   return getString(columnIndex)
+}
+
+private fun ContentValues.putNullableString(key: String, value: String?) {
+  if (value == null) {
+    putNull(key)
+  } else {
+    put(key, value)
+  }
 }

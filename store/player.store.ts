@@ -3,6 +3,8 @@ import * as MediaLibrary from "expo-media-library";
 import type { AudioStatus } from "expo-audio";
 import type { EventSubscription } from "expo-modules-core";
 
+import type { SongMetadataUpdate } from "../services/database/songs.repository";
+import type { MusicAsset } from "../types/music";
 import {
   deactivatePlayback,
   pauseTrack,
@@ -40,6 +42,10 @@ type PlayerState = {
   cleanupPlayer: () => Promise<void>;
   initializePlayer: () => Promise<void>;
   setQueue: (queue: MediaLibrary.Asset[]) => void;
+  updateTrackMetadata: (
+    trackId: string,
+    metadata: SongMetadataUpdate,
+  ) => void;
   moveQueueItem: (fromIndex: number, toIndex: number) => void;
   removeQueueItem: (trackId: string) => void;
   playSong: (
@@ -107,6 +113,28 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   setQueue: (queue) => {
     set({ queue: sanitizeQueue(queue) });
+  },
+
+  updateTrackMetadata: (trackId, metadata) => {
+    const applyMetadata = (track: MediaLibrary.Asset) => {
+      if (track.id !== trackId) {
+        return track;
+      }
+
+      return {
+        ...track,
+        albumTitle: metadata.albumTitle ?? undefined,
+        artist: metadata.artist ?? undefined,
+        genre: metadata.genre ?? undefined,
+        title: metadata.title ?? undefined,
+      } as MusicAsset;
+    };
+    const { currentTrack, queue } = get();
+
+    set({
+      currentTrack: currentTrack ? applyMetadata(currentTrack) : null,
+      queue: queue.map(applyMetadata),
+    });
   },
 
   moveQueueItem: (fromIndex, toIndex) => {

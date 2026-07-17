@@ -2,6 +2,7 @@ import { requireOptionalNativeModule } from "expo-modules-core";
 import { Platform } from "react-native";
 import type * as MediaLibrary from "expo-media-library";
 
+import type { SongMetadataUpdate } from "../database/songs.repository";
 import type { MusicAsset } from "../../types/music";
 
 type NativeMetadata = {
@@ -15,6 +16,10 @@ type NativeMetadata = {
 
 type MusicMetadataNativeModule = {
   getAudioMetadata(assetIds: string[]): Promise<NativeMetadata[]>;
+  updateAudioMetadata?: (
+    assetId: string,
+    metadata: SongMetadataUpdate,
+  ) => Promise<boolean>;
 };
 
 const nativeMetadataModule = requireOptionalNativeModule("WaveTuneAudioRoute") as
@@ -58,5 +63,23 @@ export async function enrichSongMetadata(
     });
   } catch {
     return songs;
+  }
+}
+
+export async function updateDeviceSongMetadata(
+  songId: string,
+  metadata: SongMetadataUpdate,
+) {
+  if (
+    Platform.OS !== "android" ||
+    !nativeMetadataModule?.updateAudioMetadata
+  ) {
+    return false;
+  }
+
+  try {
+    return await nativeMetadataModule.updateAudioMetadata(songId, metadata);
+  } catch {
+    return false;
   }
 }
