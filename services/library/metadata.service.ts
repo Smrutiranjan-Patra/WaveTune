@@ -1,4 +1,5 @@
-import { NativeModules, Platform } from "react-native";
+import { requireOptionalNativeModule } from "expo-modules-core";
+import { Platform } from "react-native";
 import type * as MediaLibrary from "expo-media-library";
 
 import type { MusicAsset } from "../../types/music";
@@ -16,16 +17,16 @@ type MusicMetadataNativeModule = {
   getAudioMetadata(assetIds: string[]): Promise<NativeMetadata[]>;
 };
 
-const nativeMetadataModule = NativeModules.WaveTuneMusicMetadata as
+const nativeMetadataModule = requireOptionalNativeModule("WaveTuneAudioRoute") as
   | MusicMetadataNativeModule
-  | undefined;
+  | null;
 
 export async function enrichSongMetadata(
   songs: MediaLibrary.Asset[],
 ): Promise<MusicAsset[]> {
   if (
     Platform.OS !== "android" ||
-    !nativeMetadataModule ||
+    !nativeMetadataModule?.getAudioMetadata ||
     songs.length === 0
   ) {
     return songs;
@@ -44,13 +45,15 @@ export async function enrichSongMetadata(
         return song;
       }
 
+      const existingSong = song as MusicAsset;
+
       return {
         ...song,
         albumId: item.albumId ?? song.albumId,
-        albumTitle: item.albumTitle,
-        artist: item.artist,
-        genre: item.genre,
-        title: item.title,
+        albumTitle: item.albumTitle ?? existingSong.albumTitle,
+        artist: item.artist ?? existingSong.artist,
+        genre: item.genre ?? existingSong.genre,
+        title: item.title ?? existingSong.title,
       };
     });
   } catch {

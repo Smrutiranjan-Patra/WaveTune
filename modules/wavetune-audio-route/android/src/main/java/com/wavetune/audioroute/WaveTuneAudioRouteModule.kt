@@ -77,6 +77,10 @@ class WaveTuneAudioRouteModule : Module() {
       createRoutes()
     }.runOnQueue(Queues.MAIN)
 
+    AsyncFunction("getAudioMetadata") { assetIds: List<String> ->
+      getAudioMetadata(assetIds)
+    }
+
     AsyncFunction("selectAudioRoute") { routeId: String ->
       createRoutes()
       val route = routesById[routeId]
@@ -157,6 +161,51 @@ class WaveTuneAudioRouteModule : Module() {
     return routes
   }
 
+  private fun getAudioMetadata(assetIds: List<String>): List<Map<String, Any?>> {
+    if (assetIds.isEmpty()) return emptyList()
+
+    val metadataById = mutableMapOf<String, Map<String, Any?>>()
+    val projection = arrayOf(
+      MediaStore.Audio.Media._ID,
+      MediaStore.Audio.Media.ALBUM_ID,
+      MediaStore.Audio.Media.ALBUM,
+      MediaStore.Audio.Media.ARTIST,
+      MediaStore.Audio.Media.TITLE
+    )
+
+    assetIds.chunked(300).forEach { chunk ->
+      val placeholders = chunk.joinToString(",") { "?" }
+      val selection = "${MediaStore.Audio.Media._ID} IN ($placeholders)"
+
+      context.contentResolver.query(
+        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+        projection,
+        selection,
+        chunk.toTypedArray(),
+        null
+      )?.use { cursor ->
+        val idIndex = cursor.getColumnIndex(MediaStore.Audio.Media._ID)
+        val albumIdIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID)
+        val albumTitleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)
+        val artistIndex = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
+        val titleIndex = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
+
+        while (cursor.moveToNext()) {
+          val id = cursor.getString(idIndex)
+          metadataById[id] = mapOf(
+            "id" to id,
+            "albumId" to cursor.getNullableString(albumIdIndex),
+            "albumTitle" to cursor.getNullableString(albumTitleIndex),
+            "artist" to cursor.getNullableString(artistIndex),
+            "title" to cursor.getNullableString(titleIndex)
+          )
+        }
+      }
+    }
+
+    return assetIds.mapNotNull { metadataById[it] }
+  }
+
   private fun getRouteType(route: MediaRouter.RouteInfo): String {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return "device"
 
@@ -167,4 +216,10 @@ class WaveTuneAudioRouteModule : Module() {
       else -> "device"
     }
   }
+}
+
+private fun android.database.Cursor.getNullableString(columnIndex: Int): String? {
+  if (columnIndex < 0 || isNull(columnIndex)) return null
+
+  return getString(columnIndex)
 }
