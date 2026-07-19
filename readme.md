@@ -1,231 +1,131 @@
-WaveTune - Android Development Workflow
+🎵 WaveTune
 
-This document contains the daily development workflow for the WaveTune project. It is focused only on Android development using Expo Dev Client.
-
-⸻
-
-Prerequisites
-
-Before starting development, ensure that:
-
-* Android Studio is installed.
-* Android SDK is configured.
-* USB Debugging is enabled on your Android device.
-* The device has already authorized your computer.
-* The WaveTune app has been installed at least once using expo run:android.
+<p align="center">
+  <img src="./assets/images/logo.png" alt="WaveTune Logo" width="140" />
+</p>
+<p align="center">
+  <strong>A modern Android offline music player built with React Native and Expo.</strong>
+</p>
 
 ⸻
 
-Daily Development Workflow
+Overview
+
+WaveTune is an Android-first offline music player that automatically scans your device for local audio files and delivers a clean, responsive, and intuitive music listening experience.
+
+The project focuses on performance, modern UI, and a well-structured architecture to make future feature development simple and scalable.
 
 ⸻
 
-1. Connect your Android device
+Features
 
-Connect your phone using a USB cable.
+Current Features
 
-or 
-for wireless use this
-
-adb connect 192.168.1.11:45587
-⸻
-
-2. Verify the device connection
-
-adb devices
-
-Expected output:
-
-List of devices attached
-R9XXXXXXXXXXXX    device
-
-If the device shows:
-
-unauthorized
-
-Unlock your phone and accept the USB Debugging permission.
+* 🎵 Offline music playback
+* 📁 Scan local audio files from the device
+* 🔍 Search songs
+* 💿 Browse by Albums
+* 👤 Browse by Artists
+* 🎼 Browse by Genres
+* 📂 Folder-based music browsing
+* ▶️ Background audio playback
+* 📋 Playback queue management
+* 🎧 Mini player
+* 🌙 Light & Dark themes
+* 🎨 Neumorphism-inspired user interface
 
 ⸻
 
-3. If the device is not detected
+Planned Features
 
-Restart the ADB server.
-
-adb kill-server
-adb start-server
-adb devices
-
-⸻
-
-4. Start the Metro Bundler
-
-npx expo start --dev-client
-
-Keep this terminal running throughout development.
+* ⭐ Favorites
+* 🕒 Recently Played
+* 📈 Most Played
+* 📝 Playlist management
+* 🎚 Equalizer
+* 🎤 Lyrics support
+* ⏰ Sleep Timer
+* 📱 Home Screen Widgets
+* 🎨 Material You support
+* 🚗 Android Auto support
+* ☁️ Backup & Restore
 
 ⸻
 
-5. Open WaveTune
+Tech Stack
 
-If the application is already installed, simply launch WaveTune from your phone.
-
-Fast Refresh will automatically update changes.
-
-⸻
-
-When to Rebuild the Application
-
-A rebuild is NOT required for:
-
-* UI changes
-* NativeWind styling
-* Zustand store changes
-* TypeScript changes
-* JavaScript changes
-* React component changes
-
-Simply save the file and Fast Refresh will update the app.
+Technology	Purpose
+React Native	Mobile framework
+Expo	Development platform
+Expo Router	File-based navigation
+TypeScript	Type safety
+NativeWind	Styling
+Zustand	State management
+Expo Audio	Audio playback
 
 ⸻
 
-A rebuild IS REQUIRED after:
+Project Structure
 
-* Installing a new native package
-* Removing a native package
-* Updating Expo SDK
-* Editing app.json or app.config.ts
-* Changing Android configuration
-* Running expo prebuild --clean
-
-Rebuild using:
-
-npx expo run:android
-
-⸻
-
-After Installing or Removing Dependencies
-
-Install packages:
-
-npm install
-
-Regenerate native Android files:
-
-npx expo prebuild --clean
-
-Build and install the application:
-
-npx expo run:android
+WaveTune
+├── app/              # Application screens
+├── assets/           # Images, fonts and static assets
+├── components/       # Reusable UI components
+├── helpers/          # Helper functions
+├── hooks/            # Custom React hooks
+├── modules/          # Feature modules
+├── providers/        # Context providers
+├── services/         # Business logic
+├── store/            # Zustand stores
+├── types/            # TypeScript types
+├── utils/            # Utility functions
+└── global.css        # NativeWind styles
 
 ⸻
 
-Cleaning Metro Cache
+Getting Started
 
-If Metro behaves unexpectedly:
+Follow the setup guide to run the project locally.
 
-npx expo start --dev-client --clear
-
-⸻
-
-Cleaning Gradle
-
-If Gradle cache becomes corrupted:
-
-cd android
-./gradlew clean
-cd ..
-npx expo run:android
+📄 See: SETUP.md
 
 ⸻
 
-Complete Clean Installation
+Screenshots
 
-If dependencies become corrupted:
-
-rm -rf node_modules
-rm -f package-lock.json
-npm cache clean --force
-npm install
-npx expo prebuild --clean
-npx expo run:android
+Screenshots will be added as the application evolves.
 
 ⸻
 
-Useful Commands
+Development Status
 
-Check connected device
+WaveTune is currently under active development.
 
-adb devices
-
-⸻
-
-Restart ADB
-
-adb kill-server
-adb start-server
-adb devices
+The primary focus is building a stable offline music player experience before introducing advanced features such as playlists, favorites, analytics, and customization.
 
 ⸻
 
-Start Metro
+Contributing
 
-npx expo start --dev-client
+Contributions, feature suggestions, and bug reports are welcome.
 
-⸻
+If you’d like to contribute:
 
-Build and install Android application
-
-npx expo run:android
-
-⸻
-
-Clean Metro cache
-
-npx expo start --dev-client --clear
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Open a Pull Request.
 
 ⸻
 
-Clean Gradle
+License
 
-cd android
-./gradlew clean
-cd ..
-npx expo run:android
+This project is licensed under the MIT License.
 
 ⸻
 
-Regenerate native Android project
+Author
 
-npx expo prebuild --clean
+Smrutiranjan Patra
 
-⸻
-
-Recommended Daily Workflow
-
-Open Terminal
-↓
-cd ~/Other/WaveTune
-↓
-Connect Android Device
-↓
-adb devices
-↓
-npx expo start --dev-client
-↓
-Open WaveTune on the device
-↓
-Start Developing 🚀
-
-⸻
-
-Workflow After Native Changes
-
-Install Package
-↓
-npm install
-↓
-npx expo prebuild --clean
-↓
-npx expo run:android
-↓
-Continue Development
+Frontend Engineer | React | React Native | TypeScript
