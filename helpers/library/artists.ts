@@ -6,13 +6,16 @@ const artistSeparators =
   /\s*[,;]\s*|\s+\b(?:feat\.?|ft\.?|featuring|with|x)\b\s+|\s+[×&]\s+/i;
 const placeholderArtist = /^(?:<unknown>|unknown(?: artist)?|n\/?a|none|null|-+)$/i;
 const websiteInParentheses =
-  /\(\s*(?:(?:https?:\/\/)?(?:www\.)?)[^\s()]+\.(?:com|net|org|in|co|info|site)\b[^)]*\)/gi;
+  /\(\s*(?:(?:https?:\/\/)?(?:www\.)?)[^\s()]+\.(?:com|net|org|in|co|info|site|la|one)\b[^)]*\)/gi;
 const websiteWithWww = /(?:https?:\/\/)?www\.[^\s,;()]+/gi;
+const trailingWebsiteSource =
+  /(?:\s*[-|]\s*|\s+)(?:(?:https?:\/\/)?(?:www\.)?)(?:pagal(?:world|new|bro)[a-z0-9.-]*|[a-z0-9][a-z0-9.-]*\.(?:com|net|org|in|co|info|site|la|one)\b[^\s,;()]*)$/gi;
 
 function normalizeArtistName(name: string) {
   return name
     .replace(websiteInParentheses, " ")
     .replace(websiteWithWww, " ")
+    .replace(trailingWebsiteSource, " ")
     .replace(/<unknown>/gi, " ")
     .replace(/[|/]+/g, " ")
     .replace(/\s+/g, " ")
