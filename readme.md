@@ -1,21 +1,11 @@
 🎵 WaveTune
-
-<p align="center">
-  <img src="./assets/images/logo.png" alt="WaveTune Logo" width="140" />
-</p>
-<p align="center">
-  <strong>A modern Android offline music player built with React Native and Expo.</strong>
-</p>
-
-⸻
+<strong>A modern Android offline music player built with React Native and Expo.</strong>
 
 Overview
 
 WaveTune is an Android-first offline music player that automatically scans your device for local audio files and delivers a clean, responsive, and intuitive music listening experience.
 
 The project focuses on performance, modern UI, and a well-structured architecture to make future feature development simple and scalable.
-
-⸻
 
 Features
 
@@ -34,8 +24,6 @@ Current Features
 * 🌙 Light & Dark themes
 * 🎨 Neumorphism-inspired user interface
 
-⸻
-
 Planned Features
 
 * ⭐ Favorites
@@ -50,8 +38,6 @@ Planned Features
 * 🚗 Android Auto support
 * ☁️ Backup & Restore
 
-⸻
-
 Tech Stack
 
 Technology	Purpose
@@ -63,13 +49,12 @@ NativeWind	Styling
 Zustand	State management
 Expo Audio	Audio playback
 
-⸻
-
 Project Structure
 
+```text
 WaveTune
 ├── app/              # Application screens
-├── assets/           # Images, fonts and static assets
+├── assets/           # Images, fonts, and static assets
 ├── components/       # Reusable UI components
 ├── helpers/          # Helper functions
 ├── hooks/            # Custom React hooks
@@ -77,11 +62,13 @@ WaveTune
 ├── providers/        # Context providers
 ├── services/         # Business logic
 ├── store/            # Zustand stores
-├── types/            # TypeScript types
+├── types/            # TypeScript type definitions
 ├── utils/            # Utility functions
-└── global.css        # NativeWind styles
-
-⸻
+├── global.css        # NativeWind global styles
+├── package.json
+├── tsconfig.json
+└── README.md
+```
 
 Getting Started
 
@@ -89,24 +76,15 @@ Follow the setup guide to run the project locally.
 
 📄 See: SETUP.md
 
-⸻
-
 Screenshots
-
 Screenshots will be added as the application evolves.
 
-⸻
-
 Development Status
-
 WaveTune is currently under active development.
 
 The primary focus is building a stable offline music player experience before introducing advanced features such as playlists, favorites, analytics, and customization.
 
-⸻
-
 Contributing
-
 Contributions, feature suggestions, and bug reports are welcome.
 
 If you’d like to contribute:
@@ -116,16 +94,6 @@ If you’d like to contribute:
 3. Commit your changes.
 4. Open a Pull Request.
 
-⸻
-
-License
-
-This project is licensed under the MIT License.
-
-⸻
-
 Author
-
 Smrutiranjan Patra
-
 Frontend Engineer | React | React Native | TypeScript
