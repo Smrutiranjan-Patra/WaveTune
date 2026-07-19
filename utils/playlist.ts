@@ -1,11 +1,4 @@
-const adjectives = [
-  "Bright",
-  "Chill",
-  "Golden",
-  "Midnight",
-  "Quiet",
-  "Weekend",
-];
+const adjectives = ["Bright","Chill","Golden","Midnight","Quiet","Weekend"];
 const nouns = ["Beats", "Drive", "Mix", "Mood", "Replay", "Vibes"];
 
 export function normalizePlaylistName(name: string) {
