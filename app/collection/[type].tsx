@@ -32,7 +32,11 @@ export default function CollectionScreen() {
   const songs = useLibraryStore((state) => state.songs);
   const favoriteSongIds = useUserLibraryStore((state) => state.favoriteSongIds);
   const history = useUserLibraryStore((state) => state.history);
-  const { currentTrack, isPlaying, pause, playSong, resume } = usePlayerStore();
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const pause = usePlayerStore((state) => state.pause);
+  const playSong = usePlayerStore((state) => state.playSong);
+  const resume = usePlayerStore((state) => state.resume);
   const songsById = new Map(songs.map((song) => [song.id, song]));
 
   let collection: MediaLibrary.Asset[];

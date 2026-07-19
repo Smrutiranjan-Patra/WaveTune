@@ -9,6 +9,7 @@ import {
   deactivatePlayback,
   pauseTrack,
   playTrack,
+  getPlaybackStatus,
   resetAbandonedPlayback,
   resumeTrack,
   seekTrack,
@@ -61,6 +62,7 @@ type PlayerState = {
   cycleRepeatMode: () => void;
   toggleShuffle: () => void;
   setVolume: (volume: number) => void;
+  refreshPlaybackStatus: () => Promise<void>;
   syncStatus: (status: AudioStatus) => void;
 };
 
@@ -328,6 +330,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
           error instanceof Error ? error.message : "Failed to change volume",
       });
     });
+  },
+
+  refreshPlaybackStatus: async () => {
+    if (!get().currentTrack) {
+      return;
+    }
+
+    try {
+      get().syncStatus(await getPlaybackStatus());
+    } catch {
+      // The status listener remains the primary source; polling is only a
+      // fallback for lock-screen and hardware media controls.
+    }
   },
 
   syncStatus: (status) => {

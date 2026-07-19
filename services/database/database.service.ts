@@ -4,6 +4,7 @@ import type * as SQLite from "expo-sqlite";
 const DATABASE_NAME = "wavetune.db";
 const MIGRATION_SQL = `
   PRAGMA journal_mode = WAL;
+  PRAGMA busy_timeout = 5000;
 
   CREATE TABLE IF NOT EXISTS songs (
     id TEXT PRIMARY KEY NOT NULL,

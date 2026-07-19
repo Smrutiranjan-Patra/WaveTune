@@ -345,6 +345,26 @@ export default function AppProvider({
   }, []);
 
   useEffect(() => {
+    let refreshingStatus = false;
+
+    const refreshPlaybackStatus = async () => {
+      if (refreshingStatus || AppState.currentState !== "active") {
+        return;
+      }
+
+      refreshingStatus = true;
+      await usePlayerStore.getState().refreshPlaybackStatus();
+      refreshingStatus = false;
+    };
+
+    const interval = setInterval(() => {
+      void refreshPlaybackStatus();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     updateNativeEqualizer(equalizerPreset);
   }, [equalizerPreset]);
 
@@ -417,7 +437,10 @@ export default function AppProvider({
     const appStateSubscription = AppState.addEventListener(
       "change",
       (nextState) => {
-        if (nextState === "active") scheduleLibraryRefresh();
+        if (nextState === "active") {
+          void usePlayerStore.getState().refreshPlaybackStatus();
+          scheduleLibraryRefresh();
+        }
       },
     );
 

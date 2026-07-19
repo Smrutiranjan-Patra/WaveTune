@@ -35,7 +35,11 @@ export default function LibraryGroupScreen() {
   const artists = useLibraryStore((state) => state.artists);
   const folders = useLibraryStore((state) => state.folders);
   const genres = useLibraryStore((state) => state.genres);
-  const { currentTrack, isPlaying, pause, playSong, resume } = usePlayerStore();
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const pause = usePlayerStore((state) => state.pause);
+  const playSong = usePlayerStore((state) => state.playSong);
+  const resume = usePlayerStore((state) => state.resume);
   let songs: MediaLibrary.Asset[] = [];
   let fallbackTitle = "Songs";
 

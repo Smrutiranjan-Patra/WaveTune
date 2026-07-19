@@ -1,9 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
   Animated,
-  PanResponder,
   Pressable,
   Text,
   useWindowDimensions,
@@ -31,13 +30,13 @@ export default function MiniPlayer({
   const { width } = useWindowDimensions();
   const pathname = usePathname();
   const translateX = useRef(new Animated.Value(hidden ? -width : 0)).current;
-  const {
-    currentTrack,
-    duration,
-    isPlaying,
-    position,
-    togglePlayback,
-  } = usePlayerStore();
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const duration = usePlayerStore((state) => state.duration);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const position = usePlayerStore((state) => state.position);
+  const togglePlayback = usePlayerStore((state) => state.togglePlayback);
+  const swipeStartX = useRef<number | null>(null);
+  const didSwipe = useRef(false);
 
   useEffect(() => {
     Animated.timing(translateX, {
@@ -47,58 +46,62 @@ export default function MiniPlayer({
     }).start();
   }, [hidden, translateX, width]);
 
-  const swipeResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, gesture) =>
-          gesture.dx < -8 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
-        onMoveShouldSetPanResponderCapture: (_, gesture) =>
-          gesture.dx < -8 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
-        onPanResponderGrant: () => {
-          translateX.stopAnimation();
-        },
-        onPanResponderMove: (_, gesture) => {
-          translateX.setValue(Math.min(gesture.dx, 0));
-        },
-        onPanResponderRelease: (_, gesture) => {
-          if (gesture.dx <= -40 || gesture.vx <= -0.45) {
-            Animated.timing(translateX, {
-              duration: 180,
-              toValue: -width,
-              useNativeDriver: true,
-            }).start(() => onSwipeLeft?.());
-            return;
-          }
-
-          Animated.spring(translateX, {
-            friction: 8,
-            tension: 90,
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        },
-        onPanResponderTerminate: () => {
-          Animated.spring(translateX, {
-            friction: 8,
-            tension: 90,
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        },
-        onPanResponderTerminationRequest: () => false,
-      }),
-    [onSwipeLeft, translateX, width],
-  );
-
   if (!currentTrack || pathname === "/player") {
     return null;
   }
 
   const progress = duration > 0 ? Math.min(position / duration, 1) : 0;
+  const resetMiniPlayerPosition = () => {
+    Animated.spring(translateX, {
+      friction: 8,
+      tension: 90,
+      toValue: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleTouchStart = (event: { nativeEvent: { pageX: number } }) => {
+    didSwipe.current = false;
+    swipeStartX.current = event.nativeEvent.pageX;
+    translateX.stopAnimation();
+  };
+
+  const handleTouchMove = (event: { nativeEvent: { pageX: number } }) => {
+    if (swipeStartX.current === null) {
+      return;
+    }
+
+    const distance = event.nativeEvent.pageX - swipeStartX.current;
+
+    if (distance < -8) {
+      didSwipe.current = true;
+      translateX.setValue(Math.max(distance, -width));
+    }
+  };
+
+  const handleTouchEnd = (event: { nativeEvent: { pageX: number } }) => {
+    if (swipeStartX.current === null) {
+      return;
+    }
+
+    const distance = event.nativeEvent.pageX - swipeStartX.current;
+    swipeStartX.current = null;
+
+    if (didSwipe.current && distance <= -40) {
+      Animated.timing(translateX, {
+        duration: 180,
+        toValue: -width,
+        useNativeDriver: true,
+      }).start(() => onSwipeLeft?.());
+      return;
+    }
+
+    didSwipe.current = false;
+    resetMiniPlayerPosition();
+  };
 
   return (
     <Animated.View
-      {...swipeResponder.panHandlers}
       pointerEvents={hidden ? "none" : "auto"}
       style={{
         position: "absolute",
@@ -112,12 +115,24 @@ export default function MiniPlayer({
         overflow: "hidden",
         transform: [{ translateX }],
         ...softShadow(theme.isDark, "high"),
+        elevation: 30,
+        zIndex: 30,
       }}
     >
       <Pressable
         accessibilityLabel={`Open player for ${getTrackTitle(currentTrack)}`}
         accessibilityRole="button"
-        onPress={() => router.push("/player")}
+        onPress={() => {
+          if (didSwipe.current) {
+            didSwipe.current = false;
+            return;
+          }
+
+          router.navigate("/player");
+        }}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        onTouchStart={handleTouchStart}
       >
         <View
           style={{

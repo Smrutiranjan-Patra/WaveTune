@@ -36,7 +36,7 @@ export async function initializeLibrary() {
       throw new Error("Permission denied");
     }
 
-    const songs = await scanSongs();
+    const songs = await scanSongs(cachedSongs);
 
     await replacePersistedSongs(songs);
 

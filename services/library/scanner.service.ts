@@ -36,6 +36,25 @@ const getAssetFolderPath = (asset: MediaLibrary.Asset) => {
 
 const FILE_SIZE_BATCH_SIZE = 40;
 
+function isUnchangedSong(song: MusicAsset, cachedSong?: MusicAsset) {
+  return Boolean(
+    cachedSong &&
+      cachedSong.uri === song.uri &&
+      cachedSong.modificationTime === song.modificationTime,
+  );
+}
+
+function applyCachedMetadata(song: MusicAsset, cachedSong: MusicAsset): MusicAsset {
+  return {
+    ...song,
+    albumId: cachedSong.albumId ?? song.albumId,
+    albumTitle: cachedSong.albumTitle,
+    artist: cachedSong.artist,
+    genre: cachedSong.genre,
+    title: cachedSong.title,
+  };
+}
+
 async function getFileSize(song: MusicAsset) {
   try {
     const info = await getInfoAsync(song.uri);
@@ -46,26 +65,47 @@ async function getFileSize(song: MusicAsset) {
   }
 }
 
-async function addFileSizes(songs: MusicAsset[]) {
-  const songsWithSizes: MusicAsset[] = [];
+async function addFileSizes(
+  songs: MusicAsset[],
+  cachedSongsById: Map<string, MusicAsset>,
+) {
+  const songsMissingSizes = songs.filter((song) => {
+    const cachedSong = cachedSongsById.get(song.id);
 
-  for (let index = 0; index < songs.length; index += FILE_SIZE_BATCH_SIZE) {
-    const batch = songs.slice(index, index + FILE_SIZE_BATCH_SIZE);
+    return !isUnchangedSong(song, cachedSong) || cachedSong.fileSize === undefined;
+  });
+  const fileSizesById = new Map<string, number>();
+
+  for (
+    let index = 0;
+    index < songsMissingSizes.length;
+    index += FILE_SIZE_BATCH_SIZE
+  ) {
+    const batch = songsMissingSizes.slice(index, index + FILE_SIZE_BATCH_SIZE);
     const resolvedBatch = await Promise.all(
-      batch.map(async (song) => ({
-        ...song,
-        fileSize: await getFileSize(song),
-      })),
+      batch.map(async (song) => [song.id, await getFileSize(song)] as const),
     );
 
-    songsWithSizes.push(...resolvedBatch);
+    resolvedBatch.forEach(([id, fileSize]) => fileSizesById.set(id, fileSize));
   }
 
-  return songsWithSizes;
+  return songs.map((song) => {
+    const cachedSong = cachedSongsById.get(song.id);
+
+    return {
+      ...song,
+      fileSize: isUnchangedSong(song, cachedSong)
+        ? cachedSong.fileSize
+        : (fileSizesById.get(song.id) ?? 0),
+    };
+  });
 }
 
-export async function scanSongs() {
+export async function scanSongs(cachedSongs: MusicAsset[] = []) {
   const excludedFolderPaths = useSettingsStore.getState().excludedFolderPaths;
+  const cachedSongsById = new Map(
+    cachedSongs.map((song) => [song.id, song]),
+  );
   let songs: MediaLibrary.Asset[] = [];
   let after: string | undefined = undefined;
   let hasNextPage = true;
@@ -97,7 +137,26 @@ export async function scanSongs() {
     });
   });
 
-  return addFileSizes(await enrichSongMetadata(includedSongs));
+  const songsMissingMetadata = includedSongs.filter(
+    (song) => !isUnchangedSong(song, cachedSongsById.get(song.id)),
+  );
+  const enrichedMetadataById = new Map(
+    (await enrichSongMetadata(songsMissingMetadata)).map((song) => [
+      song.id,
+      song,
+    ]),
+  );
+  const songsWithMetadata = includedSongs.map((song) => {
+    const cachedSong = cachedSongsById.get(song.id);
+
+    if (cachedSong && isUnchangedSong(song, cachedSong)) {
+      return applyCachedMetadata(song, cachedSong);
+    }
+
+    return enrichedMetadataById.get(song.id) ?? song;
+  });
+
+  return addFileSizes(songsWithMetadata, cachedSongsById);
 }
 
 export async function getAvailableMusicFolders() {

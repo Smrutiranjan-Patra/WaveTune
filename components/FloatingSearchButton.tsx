@@ -66,7 +66,7 @@ export default function FloatingSearchButton({
           onPress={() => router.push("/(tabs)/search")}
           style={[
             {
-              alignItems: "flex-start",
+              alignItems: "center",
               backgroundColor: theme.accent,
               borderColor: theme.isDark ? "#857EFF" : "#FFFFFF",
               borderRadius: 24,
@@ -74,9 +74,8 @@ export default function FloatingSearchButton({
               bottom: 106,
               height: 48,
               justifyContent: "center",
-              paddingLeft: 8,
               position: "absolute",
-              right: -14,
+              right: 16,
               width: 48,
               zIndex: 20,
             },

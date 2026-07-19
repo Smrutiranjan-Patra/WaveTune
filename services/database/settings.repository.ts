@@ -1,6 +1,6 @@
 import { Directory, File, Paths } from "expo-file-system";
 
-import { getDatabaseSync } from "./database.service";
+import { getDatabase } from "./database.service";
 
 export type PersistedSettings = {
   audioFocus: boolean;
@@ -20,6 +20,7 @@ export type PersistedSettings = {
 type SettingRow = { key: string; value: string };
 
 const SETTINGS_FILE_NAME = "wavetune-settings.json";
+let settingsWriteQueue = Promise.resolve();
 
 function getSettingsFile() {
   const directory = new Directory(Paths.document, "wavetune");
@@ -65,10 +66,10 @@ function writeFallbackSettings(settings: Partial<PersistedSettings>) {
 
 export async function getPersistedSettings() {
   const fallbackSettings = readFallbackSettings();
-  const database = getDatabaseSync();
+  const database = await getDatabase();
   if (!database) return fallbackSettings;
 
-  const rows = database.getAllSync<SettingRow>(
+  const rows = await database.getAllAsync<SettingRow>(
     "SELECT key, value FROM settings",
   );
   const databaseSettings: Partial<PersistedSettings> = {};
@@ -103,21 +104,29 @@ export function setPersistedSetting<K extends keyof PersistedSettings>(
     ...readFallbackSettings(),
     [key]: value,
   };
-  const database = getDatabaseSync();
-  if (!database) {
-    writeFallbackSettings(fallbackSettings);
-    return;
-  }
-
-  database.runSync(
-    `INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`,
-    [key, JSON.stringify(value), Date.now()],
-  );
   writeFallbackSettings(fallbackSettings);
+
+  settingsWriteQueue = settingsWriteQueue
+    .catch(() => undefined)
+    .then(async () => {
+      const database = await getDatabase();
+
+      if (!database) return;
+
+      await database.runAsync(
+        `INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)`,
+        [key, JSON.stringify(value), Date.now()],
+      );
+    })
+    .catch(() => undefined);
+
+  return settingsWriteQueue;
 }
 
-export function clearPersistedSettings() {
-  const database = getDatabaseSync();
-  database?.runSync("DELETE FROM settings");
+export async function clearPersistedSettings() {
   writeFallbackSettings({});
+  await settingsWriteQueue;
+
+  const database = await getDatabase();
+  await database?.runAsync("DELETE FROM settings");
 }

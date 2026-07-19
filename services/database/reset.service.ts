@@ -19,5 +19,5 @@ export async function resetPersistedAppData() {
     });
   }
 
-  clearPersistedSettings();
+  await clearPersistedSettings();
 }

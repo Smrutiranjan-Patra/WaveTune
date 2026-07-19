@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import type { ComponentProps, ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -92,6 +92,7 @@ export default function SettingScreen() {
   const [applying, setApplying] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [isFolderConfigOpen, setIsFolderConfigOpen] = useState(false);
+  const [folderSelectionRevision, setFolderSelectionRevision] = useState(0);
 
   const userName = useSettingsStore((state) => state.userName);
   const excludedFolderPaths = useSettingsStore((state) => state.excludedFolderPaths);
@@ -133,7 +134,7 @@ export default function SettingScreen() {
     void loadFolders();
   }, []);
 
-  const handleApply = async () => {
+  const handleApply = useCallback(async () => {
     setApplying(true);
 
     try {
@@ -141,6 +142,28 @@ export default function SettingScreen() {
     } finally {
       setApplying(false);
     }
+  }, [loadLibraryData]);
+
+  useEffect(() => {
+    if (folderSelectionRevision === 0) return;
+
+    const timer = setTimeout(() => {
+      void handleApply();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [folderSelectionRevision, handleApply]);
+
+  const toggleExcludedFolder = (folderPath: string) => {
+    toggleFolderSelection(folderPath);
+    setFolderSelectionRevision((revision) => revision + 1);
+  };
+
+  const clearExcludedFolders = () => {
+    if (excludedFolderPaths.length === 0) return;
+
+    clearFolderSelection();
+    setFolderSelectionRevision((revision) => revision + 1);
   };
 
   const busy = applying || libraryLoading;
@@ -343,7 +366,7 @@ export default function SettingScreen() {
               <Text style={{ color: theme.secondary, flex: 1, fontSize: 12 }}>
                 Available folders ({folders.length})
               </Text>
-              <Pressable onPress={clearFolderSelection}>
+              <Pressable onPress={clearExcludedFolders}>
                 <Text style={{ color: theme.accent, fontSize: 12, fontWeight: "900" }}>
                   Reset all
                 </Text>
@@ -386,7 +409,7 @@ export default function SettingScreen() {
                     </View>
                     <Switch
                       value={!isExcluded}
-                      onValueChange={() => toggleFolderSelection(folder.path)}
+                      onValueChange={() => toggleExcludedFolder(folder.path)}
                       thumbColor="#FFFFFF"
                       trackColor={{ false: theme.track, true: theme.accent }}
                     />

@@ -6,7 +6,7 @@ import { useSettingsStore } from "../store/settings.store";
 const Header = () => {
   const theme = useAppTheme();
   const userName = useSettingsStore((state) => state.userName);
-  const displayName = userName.trim();
+  const displayName = typeof userName === "string" ? userName.trim() : "";
 
   return (
     <View

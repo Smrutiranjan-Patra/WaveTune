@@ -4,9 +4,20 @@ import { UNKNOWN_ARTIST } from "../../types/music";
 
 const artistSeparators =
   /\s*[,;]\s*|\s+\b(?:feat\.?|ft\.?|featuring|with|x)\b\s+|\s+[×&]\s+/i;
+const placeholderArtist = /^(?:<unknown>|unknown(?: artist)?|n\/?a|none|null|-+)$/i;
+const websiteInParentheses =
+  /\(\s*(?:(?:https?:\/\/)?(?:www\.)?)[^\s()]+\.(?:com|net|org|in|co|info|site)\b[^)]*\)/gi;
+const websiteWithWww = /(?:https?:\/\/)?www\.[^\s,;()]+/gi;
 
 function normalizeArtistName(name: string) {
-  return name.replace(/\s+/g, " ").trim();
+  return name
+    .replace(websiteInParentheses, " ")
+    .replace(websiteWithWww, " ")
+    .replace(/<unknown>/gi, " ")
+    .replace(/[|/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[\s,;()\-]+|[\s,;()\-]+$/g, "")
+    .trim();
 }
 
 function getSongArtistNames(song: MusicAsset) {
@@ -19,7 +30,7 @@ function getSongArtistNames(song: MusicAsset) {
   const artistNames = artist
     .split(artistSeparators)
     .map(normalizeArtistName)
-    .filter(Boolean);
+    .filter((name) => name.length > 0 && !placeholderArtist.test(name));
 
   if (artistNames.length === 0) {
     return [UNKNOWN_ARTIST];

@@ -104,21 +104,17 @@ function EmptyLibrary({
 
 export default function Songs() {
   const theme = useAppTheme();
-  const {
-    error: libraryError,
-    lastScanCount,
-    loadLibraryData,
-    loading,
-    songs,
-  } = useLibraryStore();
-  const {
-    currentTrack,
-    error: playerError,
-    isPlaying,
-    pause,
-    playSong,
-    resume,
-  } = usePlayerStore();
+  const libraryError = useLibraryStore((state) => state.error);
+  const lastScanCount = useLibraryStore((state) => state.lastScanCount);
+  const loadLibraryData = useLibraryStore((state) => state.loadLibraryData);
+  const loading = useLibraryStore((state) => state.loading);
+  const songs = useLibraryStore((state) => state.songs);
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const playerError = usePlayerStore((state) => state.error);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const pause = usePlayerStore((state) => state.pause);
+  const playSong = usePlayerStore((state) => state.playSong);
+  const resume = usePlayerStore((state) => state.resume);
   const [sortOption, setSortOption] = useState<LibrarySortOption>("title");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuOpenRef = useRef(false);
@@ -145,8 +141,19 @@ export default function Songs() {
   };
 
   const handleSortOptionChange = (option: LibrarySortOption) => {
-    setSortMenuVisibility(false);
-    setSortOption(option);
+    sortMenuOpenRef.current = false;
+    sortMenuProgress.stopAnimation();
+    setSortMenuOpen(false);
+    Animated.timing(sortMenuProgress, {
+      duration: 100,
+      easing: Easing.in(Easing.quad),
+      toValue: 0,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        setSortOption(option);
+      }
+    });
   };
 
   const shuffleSongs = (items: MediaLibrary.Asset[]) => {

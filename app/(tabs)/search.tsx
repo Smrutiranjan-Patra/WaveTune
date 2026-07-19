@@ -27,7 +27,11 @@ export default function SearchScreen() {
   const removeRecentSearch = useSettingsStore(
     (state) => state.removeRecentSearch,
   );
-  const { currentTrack, isPlaying, pause, playSong, resume } = usePlayerStore();
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const pause = usePlayerStore((state) => state.pause);
+  const playSong = usePlayerStore((state) => state.playSong);
+  const resume = usePlayerStore((state) => state.resume);
   const normalizedQuery = query.trim().toLocaleLowerCase();
 
   const results = useMemo(() => {
@@ -35,9 +39,19 @@ export default function SearchScreen() {
       return [];
     }
 
-    return songs.filter((song) =>
-      getTrackTitle(song).toLocaleLowerCase().includes(normalizedQuery),
-    );
+    return songs.filter((song) => {
+      const searchableText = [
+        getTrackTitle(song),
+        getTrackArtist(song),
+        song.albumTitle ?? "",
+        song.filename,
+        song.genre ?? "",
+      ]
+        .join(" ")
+        .toLocaleLowerCase();
+
+      return searchableText.includes(normalizedQuery);
+    });
   }, [normalizedQuery, songs]);
 
   const handlePress = async (song: MediaLibrary.Asset) => {
@@ -97,7 +111,7 @@ export default function SearchScreen() {
                   autoFocus
                   onChangeText={setQuery}
                   onSubmitEditing={() => addRecentSearch(query)}
-                  placeholder="Search songs"
+                  placeholder="Search music"
                   placeholderTextColor={theme.secondary}
                   returnKeyType="search"
                   style={{
@@ -257,7 +271,7 @@ export default function SearchScreen() {
               <Text
                 style={{ color: theme.secondary, fontSize: 12, marginTop: 4 }}
               >
-                Try another song title.
+                Try a title, artist, album, genre, or file name.
               </Text>
             </View>
           ) : null
